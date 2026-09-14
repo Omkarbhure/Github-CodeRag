@@ -1,0 +1,19 @@
+package com.example.coderag.repository;
+
+import com.example.coderag.model.GitHubRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Repository
+public interface GitHubRepositoryRepository extends JpaRepository<GitHubRepository, UUID> {
+
+    List<GitHubRepository> findByOwnerIdOrderByCreatedAtDesc(UUID ownerId);
+
+    Optional<GitHubRepository> findByIdAndOwnerId(UUID id, UUID ownerId);
+
+    Optional<GitHubRepository> findByOwnerIdAndFullNameAndLatestCommitSha(UUID ownerId, String fullName, String latestCommitSha);
+}

@@ -1,0 +1,45 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: false
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: test-github-client-id
+            client-secret: test-github-client-secret
+            scope:
+              - read:user
+              - user:email
+
+app:
+  jwt:
+    secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+    expiration-seconds: 3600
+  cookie:
+    name: coderag_token
+    domain:
+    secure: false
+    same-site: Lax
+  frontend-url: http://localhost:3000
+  gemini:
+    api-key: test-gemini-api-key
+    embedding-model: text-embedding-004
+    chat-model: gemini-1.5-flash
+    base-url: http://localhost:9999
+  qdrant:
+    url: http://localhost:6333
+    collection-name: code_chunks
+  hybrid-search:
+    vector-weight: 0.7
+    keyword-weight: 0.3
+
