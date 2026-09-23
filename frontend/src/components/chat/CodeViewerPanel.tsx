@@ -196,9 +196,9 @@ export function CodeViewerPanel({
   const language = getLanguage(filePath);
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-slate-900 shadow-sm overflow-hidden relative">
+    <div className="flex h-full flex-col rounded-2xl border border-white/[0.08] bg-[#070a12] shadow-2xl overflow-hidden relative">
       {/* Viewer Header Bar */}
-      <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950/90 px-4 py-3 text-xs text-slate-300">
+      <div className="flex items-center justify-between border-b border-white/[0.08] bg-[#090d18] px-4 py-3 text-xs text-slate-300">
         <div className="flex items-center gap-2 truncate pr-2">
           <FileCode2 className="h-4 w-4 text-indigo-400 shrink-0" />
           {filePath ? (
@@ -223,7 +223,7 @@ export function CodeViewerPanel({
               className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${
                 showRelated
                   ? 'bg-indigo-600 border-indigo-500 text-white'
-                  : 'border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white'
+                  : 'border-white/[0.08] bg-white/[0.03] text-slate-300 hover:bg-white/[0.08] hover:text-white'
               }`}
               title="View files related to this file"
             >
@@ -320,7 +320,7 @@ export function CodeViewerPanel({
 
         {/* Related Files Sidebar Drawer */}
         {showRelated && (
-          <div className="w-80 border-l border-slate-800 bg-slate-950/95 flex flex-col h-full z-10 shadow-2xl backdrop-blur-sm">
+          <div className="w-full sm:w-80 absolute sm:relative right-0 inset-y-0 border-l border-white/[0.08] bg-[#0c101d]/95 flex flex-col h-full z-20 shadow-2xl backdrop-blur-md">
             <div className="flex items-center justify-between border-b border-slate-800 px-3.5 py-2.5 text-xs text-slate-300 bg-slate-900/60">
               <div className="flex items-center gap-1.5 font-semibold text-slate-100">
                 <Sparkles className="h-4 w-4 text-indigo-400" />

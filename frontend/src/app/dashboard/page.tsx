@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { apiFetch } from '@/lib/api';
 import { RepositorySummary, IndexingStatus } from '@/types/repository';
+import { BrandLogo } from '@/components/common/BrandLogo';
 import {
   LogOut,
   Github,
@@ -24,7 +25,8 @@ import {
   AlertCircle,
   Bot,
   Sparkles,
-  Layers
+  Layers,
+  Terminal
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -120,22 +122,22 @@ export default function DashboardPage() {
     switch (status) {
       case 'COMPLETED':
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-600/20">
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-950/60 px-2.5 py-1 text-[11px] font-mono font-medium text-emerald-400 border border-emerald-500/30">
+            <CheckCircle2 className="h-3 w-3 text-emerald-400" />
             COMPLETED
           </span>
         );
       case 'EMBEDDING':
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-2.5 py-1 text-xs font-semibold text-purple-700 ring-1 ring-purple-600/20">
-            <Sparkles className="h-3.5 w-3.5 animate-pulse text-purple-600" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-950/60 px-2.5 py-1 text-[11px] font-mono font-medium text-purple-300 border border-purple-500/30">
+            <Sparkles className="h-3 w-3 animate-pulse text-purple-400" />
             EMBEDDING VECTORS
           </span>
         );
       case 'CHUNKING':
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-600/20">
-            <Layers className="h-3.5 w-3.5 animate-pulse text-indigo-600" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-950/60 px-2.5 py-1 text-[11px] font-mono font-medium text-indigo-300 border border-indigo-500/30">
+            <Layers className="h-3 w-3 animate-pulse text-indigo-400" />
             CHUNKING CODE
           </span>
         );
@@ -143,23 +145,23 @@ export default function DashboardPage() {
       case 'DOWNLOADING':
       case 'PENDING':
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-600/20">
-            <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-950/60 px-2.5 py-1 text-[11px] font-mono font-medium text-blue-300 border border-blue-500/30">
+            <Loader2 className="h-3 w-3 animate-spin text-blue-400" />
             {status}
           </span>
         );
       case 'REJECTED_TOO_LARGE':
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-600/20">
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-950/60 px-2.5 py-1 text-[11px] font-mono font-medium text-amber-300 border border-amber-500/30">
+            <AlertTriangle className="h-3 w-3 text-amber-400" />
             TOO LARGE (&gt;100MB)
           </span>
         );
       case 'FAILED':
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 ring-1 ring-rose-600/20">
-            <XCircle className="h-3.5 w-3.5 text-rose-600" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-950/60 px-2.5 py-1 text-[11px] font-mono font-medium text-rose-300 border border-rose-500/30">
+            <XCircle className="h-3 w-3 text-rose-400" />
             FAILED
           </span>
         );
@@ -168,38 +170,30 @@ export default function DashboardPage() {
 
   if (loading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+      <div className="flex min-h-screen items-center justify-center bg-[#07090e]">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
-          <p className="text-sm font-medium text-slate-500">Loading your session...</p>
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
+          <p className="text-xs font-mono text-slate-400">Loading session...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#07090e] text-slate-100">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 font-bold text-white shadow-sm">
-              CR
-            </div>
-            <div>
-              <h1 className="text-base font-semibold text-slate-900">GitHub CodeRAG</h1>
-              <p className="text-xs text-slate-500">AI Code Assistant + Monaco Code Viewer</p>
-            </div>
-          </div>
+      <header className="sticky top-0 z-10 border-b border-white/[0.08] bg-[#07090e]/80 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-3.5 py-3 sm:px-6">
+          <BrandLogo size="sm" subtitle="AI Code Assistant + Monaco Viewer" />
 
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 text-xs text-slate-600">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span>{user.email || user.githubUsername}</span>
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="hidden sm:flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 text-xs text-slate-300">
+              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              <span className="font-mono text-[11px] text-slate-300">{user.email || user.githubUsername}</span>
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2"
+              className="flex items-center gap-1.5 sm:gap-2 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 sm:px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-rose-950/40 hover:text-rose-300 hover:border-rose-500/30 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-[#07090e]"
             >
               <LogOut className="h-3.5 w-3.5" />
               <span>Sign Out</span>
@@ -211,30 +205,35 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 space-y-8">
         {/* Import Repo Section */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-2 text-slate-900 font-semibold text-base">
-            <FolderGit2 className="h-5 w-5 text-indigo-600" />
-            <h2>Import Public GitHub Repository</h2>
+        <section className="rounded-2xl border border-white/[0.08] bg-[#0c101d] p-6 shadow-2xl space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-white font-bold text-base">
+              <FolderGit2 className="h-5 w-5 text-indigo-400" />
+              <h2>Import Public GitHub Repository</h2>
+            </div>
+            <span className="font-mono text-[10px] text-slate-400 uppercase tracking-wider hidden sm:inline-block">
+              Cap: 100MB Repo • 10MB File
+            </span>
           </div>
-          <p className="mt-1 text-xs text-slate-500">
-            Provide a public GitHub URL (e.g. <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-slate-800">https://github.com/owner/repository</code>). Repo cap: 100MB; individual file cap: 10MB.
+          <p className="text-xs text-slate-400">
+            Paste any public GitHub URL to sync repository tree, chunk source files, and generate Gemini embeddings.
           </p>
 
           {importError && (
-            <div className="mt-4 flex items-center gap-2 rounded-lg bg-red-50 p-3.5 text-xs text-red-700 ring-1 ring-red-200">
-              <AlertCircle className="h-4 w-4 shrink-0" />
+            <div className="flex items-center gap-2 rounded-xl bg-rose-950/50 border border-rose-500/30 p-3.5 text-xs text-rose-300">
+              <AlertCircle className="h-4 w-4 shrink-0 text-rose-400" />
               <span>{importError}</span>
             </div>
           )}
 
           {importSuccess && (
-            <div className="mt-4 flex items-center gap-2 rounded-lg bg-emerald-50 p-3.5 text-xs text-emerald-700 ring-1 ring-emerald-200">
-              <CheckCircle2 className="h-4 w-4 shrink-0" />
+            <div className="flex items-center gap-2 rounded-xl bg-emerald-950/50 border border-emerald-500/30 p-3.5 text-xs text-emerald-300">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
               <span>{importSuccess}</span>
             </div>
           )}
 
-          <form onSubmit={handleImport} className="mt-4 flex flex-col sm:flex-row gap-3">
+          <form onSubmit={handleImport} className="flex flex-col sm:flex-row gap-3 pt-1">
             <div className="relative flex-1">
               <Github className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
@@ -243,19 +242,19 @@ export default function DashboardPage() {
                 value={githubUrl}
                 onChange={(e) => setGithubUrl(e.target.value)}
                 placeholder="https://github.com/owner/repository"
-                className="w-full rounded-lg border border-slate-200 py-2.5 pl-9 pr-3 text-sm placeholder-slate-400 focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600"
+                className="w-full rounded-xl border border-white/[0.08] bg-black/40 py-2.5 pl-9 pr-3 text-sm text-white placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
             </div>
 
             <button
               type="submit"
               disabled={importing}
-              className="flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 disabled:opacity-50"
+              className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-[#07090e] disabled:opacity-50"
             >
               {importing ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Importing & Indexing...</span>
+                  <span>Importing &amp; Indexing...</span>
                 </>
               ) : (
                 <>
@@ -270,10 +269,15 @@ export default function DashboardPage() {
         {/* Repositories List */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-slate-900">Your Repositories</h2>
+            <div className="flex items-center gap-2">
+              <Terminal className="h-4 w-4 text-indigo-400" />
+              <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-slate-300">
+                Your Repositories ({repositories.length})
+              </h2>
+            </div>
             <button
               onClick={fetchRepositories}
-              className="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 transition"
+              className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs font-mono text-slate-300 transition hover:bg-white/[0.08] hover:text-white"
             >
               <RefreshCw className="h-3.5 w-3.5" />
               <span>Refresh</span>
@@ -281,62 +285,62 @@ export default function DashboardPage() {
           </div>
 
           {loadingRepos ? (
-            <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center">
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0c101d] p-12 text-center">
               <Loader2 className="mx-auto h-6 w-6 animate-spin text-slate-400" />
-              <p className="mt-2 text-xs text-slate-500">Loading repositories...</p>
+              <p className="mt-2 text-xs font-mono text-slate-400">Loading repositories...</p>
             </div>
           ) : repositories.length === 0 ? (
-            <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center">
-              <FolderGit2 className="mx-auto h-10 w-10 text-slate-300" />
-              <h3 className="mt-2 text-sm font-semibold text-slate-900">No repositories yet</h3>
-              <p className="mt-1 text-xs text-slate-500">
-                Paste a public GitHub URL above to import your first code repository.
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0c101d] p-12 text-center space-y-3">
+              <FolderGit2 className="mx-auto h-10 w-10 text-slate-600" />
+              <h3 className="text-sm font-semibold text-white">No repositories indexed yet</h3>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                Paste any public GitHub repository URL in the box above to start indexing chunks and chatting with AI.
               </p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <div className="divide-y divide-slate-200">
+            <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0c101d] shadow-2xl">
+              <div className="divide-y divide-white/[0.06]">
                 {repositories.map((repo) => (
                   <div
                     key={repo.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-5 gap-4 hover:bg-slate-50/80 transition"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-5 gap-4 hover:bg-white/[0.02] transition"
                   >
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-2">
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center gap-2.5">
                         <Link
                           href={repo.status === 'COMPLETED' ? `/repositories/${repo.id}/chat` : `/repositories/${repo.id}`}
-                          className="font-semibold text-sm text-slate-900 hover:text-indigo-600 transition"
+                          className="font-bold text-sm text-white hover:text-indigo-400 transition"
                         >
                           {repo.fullName}
                         </Link>
                         {renderStatusBadge(repo.status)}
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-slate-400">
                         {repo.defaultBranch && (
-                          <span className="flex items-center gap-1">
-                            <GitBranch className="h-3.5 w-3.5 text-slate-400" />
+                          <span className="flex items-center gap-1 text-slate-300">
+                            <GitBranch className="h-3.5 w-3.5 text-indigo-400" />
                             {repo.defaultBranch}
                           </span>
                         )}
                         {repo.latestCommitSha && (
-                          <span className="flex items-center gap-1 font-mono">
-                            <GitCommit className="h-3.5 w-3.5 text-slate-400" />
+                          <span className="flex items-center gap-1 text-slate-400">
+                            <GitCommit className="h-3.5 w-3.5 text-slate-500" />
                             {repo.latestCommitSha.substring(0, 7)}
                           </span>
                         )}
                         <span className="flex items-center gap-1">
-                          <HardDrive className="h-3.5 w-3.5 text-slate-400" />
+                          <HardDrive className="h-3.5 w-3.5 text-slate-500" />
                           {formatSize(repo.sizeKb)}
                         </span>
                         <span className="flex items-center gap-1">
-                          <FileCode2 className="h-3.5 w-3.5 text-slate-400" />
+                          <FileCode2 className="h-3.5 w-3.5 text-slate-500" />
                           {repo.totalFiles} files {repo.skippedFiles > 0 ? `(${repo.skippedFiles} skipped)` : ''}
                         </span>
                       </div>
 
                       {repo.errorMessage && (
-                        <p className="text-xs text-red-600">{repo.errorMessage}</p>
+                        <p className="text-xs font-mono text-rose-400">{repo.errorMessage}</p>
                       )}
                     </div>
 
@@ -345,14 +349,14 @@ export default function DashboardPage() {
                         <>
                           <Link
                             href={`/repositories/${repo.id}/chat`}
-                            className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-500"
+                            className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-glow transition hover:bg-indigo-500"
                           >
                             <Bot className="h-3.5 w-3.5" />
                             <span>Open Chat</span>
                           </Link>
                           <Link
                             href={`/repositories/${repo.id}`}
-                            className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-indigo-600"
+                            className="flex items-center gap-1 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-white/[0.08] hover:text-white"
                           >
                             <span>Overview</span>
                           </Link>
@@ -360,7 +364,7 @@ export default function DashboardPage() {
                       ) : (
                         <Link
                           href={`/repositories/${repo.id}`}
-                          className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-indigo-600"
+                          className="flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-white/[0.08] hover:text-white"
                         >
                           <span>View Status</span>
                           <ArrowRight className="h-3.5 w-3.5" />

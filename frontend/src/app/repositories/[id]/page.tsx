@@ -58,8 +58,8 @@ export default function RepositoryDetailPage() {
   const [repository, setRepository] = useState<RepositoryDetail | null>(null);
   const [loadingRepo, setLoadingRepo] = useState(true);
 
-  // Tab State: 'architecture' | 'bug' | 'search' | 'chunks'
-  const [activeTab, setActiveTab] = useState<'architecture' | 'bug' | 'search' | 'chunks'>('architecture');
+  // Tab State: 'architecture' | 'bug' | 'search' | 'chunks' | 'files'
+  const [activeTab, setActiveTab] = useState<'architecture' | 'bug' | 'search' | 'chunks' | 'files'>('architecture');
 
   // Files tab state
   const [filesData, setFilesData] = useState<PageResponse<RepositoryFile> | null>(null);
@@ -310,47 +310,48 @@ export default function RepositoryDetailPage() {
 
   if (authLoading || loadingRepo || !repository) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+      <div className="flex min-h-screen items-center justify-center bg-[#07090e]">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-          <p className="text-sm font-medium text-slate-500">Loading repository details...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
+          <p className="text-sm font-mono text-slate-400">Loading repository details...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-16">
+    <div className="min-h-screen bg-[#07090e] text-slate-100 pb-16">
       {/* Header */}
-      <header className="border-b border-slate-200 bg-white sticky top-0 z-10 shadow-sm">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-3">
+      <header className="border-b border-white/[0.08] bg-[#07090e]/80 backdrop-blur-xl sticky top-0 z-10 shadow-sm">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
+          <div className="flex items-center gap-3 min-w-0">
             <Link
               href="/dashboard"
-              className="rounded-xl border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition shadow-sm"
+              className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-2 text-slate-300 hover:bg-white/[0.08] hover:text-white transition shadow-sm shrink-0"
               title="Back to Dashboard"
             >
               <ArrowLeft className="h-4 w-4" />
             </Link>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base font-semibold text-slate-900">{repository.fullName}</h1>
-                <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 border border-indigo-100">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-base font-bold text-white truncate max-w-[200px] sm:max-w-md">{repository.fullName}</h1>
+                <span className="rounded-md bg-indigo-950/60 px-2 py-0.5 text-[10px] font-mono font-bold text-indigo-300 border border-indigo-500/30 shrink-0">
                   {repository.status}
                 </span>
               </div>
-              <p className="text-xs text-slate-500">Developer Intelligence, File Inventory & Hybrid Search</p>
+              <p className="text-xs font-mono text-slate-400 hidden sm:block">Developer Intelligence, File Inventory &amp; Hybrid Search</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {repository.status === 'COMPLETED' && (
               <Link
                 href={`/repositories/${repoId}/chat`}
-                className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-500"
+                className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3 sm:px-4 py-2 text-xs font-semibold text-white shadow-glow transition hover:bg-indigo-500"
               >
                 <Bot className="h-4 w-4" />
-                <span>Open Chat + Code Viewer</span>
+                <span className="hidden xs:inline sm:inline">Open Chat + Monaco</span>
+                <span className="inline xs:hidden sm:hidden">Chat</span>
               </Link>
             )}
 
@@ -358,7 +359,7 @@ export default function RepositoryDetailPage() {
               href={repository.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-indigo-600"
+              className="flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs font-semibold text-slate-300 shadow-sm transition hover:bg-white/[0.08] hover:text-white"
             >
               <span>GitHub</span>
               <ExternalLink className="h-3.5 w-3.5" />
@@ -368,54 +369,54 @@ export default function RepositoryDetailPage() {
       </header>
 
       {/* Main Content */}
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 space-y-6">
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8 sm:px-6 space-y-6">
         {/* Repo Meta Overview Card */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 text-xs">
+        <section className="rounded-2xl border border-white/[0.08] bg-[#0c101d] p-4 sm:p-6 shadow-xl">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 divide-y sm:divide-y-0 sm:divide-x divide-white/[0.06] text-xs">
             <div className="space-y-1">
-              <span className="text-slate-500 font-medium">Default Branch</span>
-              <div className="flex items-center gap-1.5 font-semibold text-slate-900">
-                <GitBranch className="h-4 w-4 text-indigo-500" />
-                <span>{repository.defaultBranch || 'main'}</span>
+              <span className="text-slate-400 font-medium">Default Branch</span>
+              <div className="flex items-center gap-1.5 font-semibold text-white">
+                <GitBranch className="h-4 w-4 text-indigo-400 shrink-0" />
+                <span className="truncate">{repository.defaultBranch || 'main'}</span>
               </div>
             </div>
 
             <div className="space-y-1 pt-3 sm:pt-0 sm:pl-4">
-              <span className="text-slate-500 font-medium">Latest Commit</span>
-              <div className="flex items-center gap-1.5 font-mono font-semibold text-slate-900">
-                <GitCommit className="h-4 w-4 text-indigo-500" />
+              <span className="text-slate-400 font-medium">Latest Commit</span>
+              <div className="flex items-center gap-1.5 font-mono font-semibold text-slate-200">
+                <GitCommit className="h-4 w-4 text-indigo-400 shrink-0" />
                 <span>{repository.latestCommitSha?.substring(0, 7) || 'N/A'}</span>
               </div>
             </div>
 
             <div className="space-y-1 pt-3 sm:pt-0 sm:pl-4">
-              <span className="text-slate-500 font-medium">Files (Kept / Total)</span>
-              <div className="flex items-center gap-1.5 font-semibold text-slate-900">
-                <FileCode2 className="h-4 w-4 text-indigo-500" />
+              <span className="text-slate-400 font-medium">Files (Kept / Total)</span>
+              <div className="flex items-center gap-1.5 font-semibold text-white">
+                <FileCode2 className="h-4 w-4 text-indigo-400 shrink-0" />
                 <span>{repository.keptFiles} / {repository.totalFiles}</span>
               </div>
               {repository.lowValueSkippedCount ? (
-                <span className="text-[10px] text-amber-600 font-medium block">
+                <span className="text-[10px] text-amber-400 font-medium block">
                   ({repository.lowValueSkippedCount} low-value skipped)
                 </span>
               ) : null}
             </div>
 
             <div className="space-y-1 pt-3 sm:pt-0 sm:pl-4">
-              <span className="text-slate-500 font-medium">Chunks & Vectors</span>
-              <div className="flex items-center gap-1.5 font-semibold text-indigo-600">
-                <Layers className="h-4 w-4 text-indigo-500" />
+              <span className="text-slate-400 font-medium">Chunks &amp; Vectors</span>
+              <div className="flex items-center gap-1.5 font-semibold text-indigo-400">
+                <Layers className="h-4 w-4 text-indigo-400 shrink-0" />
                 <span>{repository.totalChunks ?? 0} Chunks</span>
               </div>
-              <span className="text-[10px] text-emerald-600 font-medium block">
+              <span className="text-[10px] text-emerald-400 font-medium block">
                 ({repository.embeddedChunkCount ?? 0} Qdrant vectors)
               </span>
             </div>
 
-            <div className="space-y-1 pt-3 sm:pt-0 sm:pl-4">
-              <span className="text-slate-500 font-medium">Repository Size</span>
-              <div className="flex items-center gap-1.5 font-semibold text-slate-900">
-                <HardDrive className="h-4 w-4 text-indigo-500" />
+            <div className="space-y-1 pt-3 sm:pt-0 sm:pl-4 col-span-2 sm:col-span-1">
+              <span className="text-slate-400 font-medium">Repository Size</span>
+              <div className="flex items-center gap-1.5 font-semibold text-white">
+                <HardDrive className="h-4 w-4 text-indigo-400 shrink-0" />
                 <span>{(repository.sizeKb / 1024).toFixed(2)} MB</span>
               </div>
             </div>
@@ -424,14 +425,14 @@ export default function RepositoryDetailPage() {
 
         {/* Hero banner for Split View Chat */}
         {repository.status === 'COMPLETED' && (
-          <div className="rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-indigo-500/10 p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+          <div className="rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-indigo-950/40 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-glow shrink-0">
                 <Bot className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-slate-900">Interactive Split-View RAG Workspace</h3>
-                <p className="text-xs text-slate-500">
+                <h3 className="text-sm font-bold text-white">Interactive Split-View RAG Workspace</h3>
+                <p className="text-xs text-slate-400">
                   Ask questions with inline grounded citations and view highlighted source code in Monaco Editor.
                 </p>
               </div>
@@ -439,7 +440,7 @@ export default function RepositoryDetailPage() {
 
             <Link
               href={`/repositories/${repoId}/chat`}
-              className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 transition shrink-0"
+              className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-glow hover:bg-indigo-500 transition shrink-0 w-full sm:w-auto justify-center"
             >
               <span>Launch Split-View Chat</span>
               <ArrowRight className="h-4 w-4" />
@@ -448,49 +449,49 @@ export default function RepositoryDetailPage() {
         )}
 
         {/* Tab Selector */}
-        <div className="flex items-center gap-2 border-b border-slate-200 overflow-x-auto">
+        <div className="flex items-center gap-1 sm:gap-2 border-b border-white/[0.08] overflow-x-auto no-scrollbar scroll-smooth">
           <button
             onClick={() => setActiveTab('architecture')}
-            className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold transition whitespace-nowrap ${
+            className={`flex items-center gap-2 border-b-2 px-3 sm:px-4 py-2.5 text-xs font-semibold transition whitespace-nowrap shrink-0 ${
               activeTab === 'architecture'
-                ? 'border-indigo-600 text-indigo-600'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
+                ? 'border-indigo-500 text-indigo-400'
+                : 'border-transparent text-slate-400 hover:text-white'
             }`}
           >
-            <Compass className="h-4 w-4 text-purple-500" />
+            <Compass className="h-4 w-4 text-purple-400" />
             <span>Architecture Overview</span>
           </button>
           <button
             onClick={() => setActiveTab('bug')}
-            className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold transition whitespace-nowrap ${
+            className={`flex items-center gap-2 border-b-2 px-3 sm:px-4 py-2.5 text-xs font-semibold transition whitespace-nowrap shrink-0 ${
               activeTab === 'bug'
-                ? 'border-indigo-600 text-indigo-600'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
+                ? 'border-rose-500 text-rose-400'
+                : 'border-transparent text-slate-400 hover:text-white'
             }`}
           >
-            <Bug className="h-4 w-4 text-rose-500" />
+            <Bug className="h-4 w-4 text-rose-400" />
             <span>Bug Investigation</span>
           </button>
           <button
             onClick={() => setActiveTab('search')}
-            className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold transition whitespace-nowrap ${
+            className={`flex items-center gap-2 border-b-2 px-3 sm:px-4 py-2.5 text-xs font-semibold transition whitespace-nowrap shrink-0 ${
               activeTab === 'search'
-                ? 'border-indigo-600 text-indigo-600'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
+                ? 'border-indigo-500 text-indigo-400'
+                : 'border-transparent text-slate-400 hover:text-white'
             }`}
           >
-            <Sparkles className="h-4 w-4 text-indigo-500" />
+            <Sparkles className="h-4 w-4 text-indigo-400" />
             <span>Hybrid Search</span>
           </button>
           <button
             onClick={() => setActiveTab('chunks')}
-            className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold transition whitespace-nowrap ${
+            className={`flex items-center gap-2 border-b-2 px-3 sm:px-4 py-2.5 text-xs font-semibold transition whitespace-nowrap shrink-0 ${
               activeTab === 'chunks'
-                ? 'border-indigo-600 text-indigo-600'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
+                ? 'border-indigo-500 text-indigo-400'
+                : 'border-transparent text-slate-400 hover:text-white'
             }`}
           >
-            <SlidersHorizontal className="h-4 w-4 text-slate-500" />
+            <SlidersHorizontal className="h-4 w-4 text-slate-400" />
             <span>Advanced / Indexing Stats ({repository.totalChunks ?? 0})</span>
           </button>
         </div>
@@ -500,52 +501,52 @@ export default function RepositoryDetailPage() {
           <div className="space-y-6">
             {/* Indexing Diagnostics Cards */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                <div className="flex items-center gap-2 text-slate-500 mb-1">
-                  <Layers className="h-4 w-4 text-indigo-600" />
+              <div className="rounded-2xl border border-white/[0.08] bg-[#0c101d] p-4 shadow-xl">
+                <div className="flex items-center gap-2 text-slate-400 mb-1">
+                  <Layers className="h-4 w-4 text-indigo-400" />
                   <span className="text-xs font-semibold">Total Code Chunks</span>
                 </div>
-                <div className="text-xl font-bold text-slate-900">
+                <div className="text-xl font-bold text-white">
                   {chunksData?.totalElements ?? repository.totalChunks ?? 0}
                 </div>
-                <div className="text-[10px] text-slate-500 mt-1">Indexed in Vector & Keyword Stores</div>
+                <div className="text-[10px] text-slate-400 mt-1">Indexed in Vector & Keyword Stores</div>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                <div className="flex items-center gap-2 text-slate-500 mb-1">
-                  <Code2 className="h-4 w-4 text-purple-600" />
+              <div className="rounded-2xl border border-white/[0.08] bg-[#0c101d] p-4 shadow-xl">
+                <div className="flex items-center gap-2 text-slate-400 mb-1">
+                  <Code2 className="h-4 w-4 text-purple-400" />
                   <span className="text-xs font-semibold">Chunk Window</span>
                 </div>
-                <div className="text-xl font-bold text-slate-900">120 Lines</div>
-                <div className="text-[10px] text-slate-500 mt-1">20-line sliding window overlap</div>
+                <div className="text-xl font-bold text-white">120 Lines</div>
+                <div className="text-[10px] text-slate-400 mt-1">20-line sliding window overlap</div>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                <div className="flex items-center gap-2 text-slate-500 mb-1">
-                  <Cpu className="h-4 w-4 text-emerald-600" />
+              <div className="rounded-2xl border border-white/[0.08] bg-[#0c101d] p-4 shadow-xl">
+                <div className="flex items-center gap-2 text-slate-400 mb-1">
+                  <Cpu className="h-4 w-4 text-emerald-400" />
                   <span className="text-xs font-semibold">Vector Embedding</span>
                 </div>
-                <div className="text-xl font-bold text-slate-900">768-dim</div>
-                <div className="text-[10px] text-slate-500 mt-1">Gemini text-embedding-004</div>
+                <div className="text-xl font-bold text-white">768-dim</div>
+                <div className="text-[10px] text-slate-400 mt-1">Gemini text-embedding-004</div>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                <div className="flex items-center gap-2 text-slate-500 mb-1">
-                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+              <div className="rounded-2xl border border-white/[0.08] bg-[#0c101d] p-4 shadow-xl">
+                <div className="flex items-center gap-2 text-slate-400 mb-1">
+                  <AlertTriangle className="h-4 w-4 text-amber-400" />
                   <span className="text-xs font-semibold">Low-Value Filtered</span>
                 </div>
-                <div className="text-xl font-bold text-slate-900">
+                <div className="text-xl font-bold text-white">
                   {repository.lowValueSkippedCount ?? 0}
                 </div>
-                <div className="text-[10px] text-slate-500 mt-1">Minified & generated files skipped</div>
+                <div className="text-[10px] text-slate-400 mt-1">Minified & generated files skipped</div>
               </div>
             </div>
 
             {/* Chunks Explorer Section */}
-            <section className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-              <div className="border-b border-slate-200 p-4 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <section className="rounded-2xl border border-white/[0.08] bg-[#0c101d] shadow-xl overflow-hidden">
+              <div className="border-b border-white/[0.08] p-4 bg-[#090d18] flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-slate-900">
+                  <span className="text-xs font-semibold text-white">
                     Chunk Inspector & Raw Segments ({chunksData?.totalElements ?? repository.totalChunks ?? 0})
                   </span>
                 </div>
@@ -556,41 +557,41 @@ export default function RepositoryDetailPage() {
                     placeholder="Filter chunk paths..."
                     value={chunkSearchQuery}
                     onChange={(e) => setChunkSearchQuery(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 py-1.5 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-xl border border-white/[0.08] bg-black/40 pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
                 </div>
               </div>
 
             {loadingChunks ? (
               <div className="flex py-16 items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
+                <Loader2 className="h-6 w-6 animate-spin text-indigo-400" />
               </div>
             ) : !chunksData || chunksData.content.length === 0 ? (
-              <div className="p-8 text-center text-xs text-slate-500">No code chunks found.</div>
+              <div className="p-8 text-center text-xs text-slate-400">No code chunks found.</div>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-white/[0.06]">
                 {chunksData.content
                   .filter((c) => !chunkSearchQuery || c.filePath.toLowerCase().includes(chunkSearchQuery.toLowerCase()))
                   .map((chunk) => {
                     const isExpanded = expandedChunkId === chunk.id;
                     return (
-                      <div key={chunk.id} className="p-4 transition hover:bg-slate-50/60">
+                      <div key={chunk.id} className="p-4 transition hover:bg-white/[0.02]">
                         <div className="flex items-center justify-between gap-4">
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className="rounded bg-indigo-50 px-2 py-0.5 font-mono text-[10px] font-bold text-indigo-700 border border-indigo-100">
+                            <span className="rounded bg-indigo-950/60 px-2 py-0.5 font-mono text-[10px] font-bold text-indigo-300 border border-indigo-500/30">
                               #{chunk.chunkIndex}
                             </span>
-                            <span className="font-mono text-xs font-semibold text-slate-900 truncate">
+                            <span className="font-mono text-xs font-semibold text-slate-200 truncate">
                               {chunk.filePath}
                             </span>
-                            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                            <span className="rounded-md bg-white/[0.05] px-2 py-0.5 text-[10px] font-mono text-slate-400 border border-white/[0.05]">
                               Lines {chunk.startLine}&ndash;{chunk.endLine}
                             </span>
                           </div>
 
                           <button
                             onClick={() => setExpandedChunkId(isExpanded ? null : chunk.id)}
-                            className="flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-800 transition"
+                            className="flex items-center gap-1 text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition"
                           >
                             <span>{isExpanded ? 'Hide Code' : 'View Code'}</span>
                             {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
@@ -598,7 +599,7 @@ export default function RepositoryDetailPage() {
                         </div>
 
                         {isExpanded && chunk.content && (
-                          <div className="mt-3 rounded-xl bg-slate-900 p-3 font-mono text-[11px] text-slate-100 overflow-x-auto shadow-inner">
+                          <div className="mt-3 rounded-xl bg-[#070a12] border border-white/[0.08] p-3.5 font-mono text-[11px] text-slate-200 overflow-x-auto shadow-inner">
                             <pre className="whitespace-pre overflow-x-auto">{chunk.content}</pre>
                           </div>
                         )}
@@ -607,22 +608,22 @@ export default function RepositoryDetailPage() {
                   })}
 
                 {/* Pagination */}
-                <div className="flex items-center justify-between border-t border-slate-200 px-4 py-3 bg-slate-50/50">
-                  <span className="text-xs text-slate-500">
+                <div className="flex items-center justify-between border-t border-white/[0.08] px-4 py-3 bg-[#090d18]">
+                  <span className="text-xs text-slate-400 font-mono">
                     Page {chunksData.page + 1} of {chunksData.totalPages || 1} ({chunksData.totalElements} chunks)
                   </span>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setChunkPage((p) => Math.max(0, p - 1))}
                       disabled={chunksData.first}
-                      className="rounded-lg border border-slate-200 bg-white p-1 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                      className="rounded-lg border border-white/[0.08] bg-white/[0.03] p-1 text-slate-300 hover:bg-white/[0.08] hover:text-white disabled:opacity-40"
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => setChunkPage((p) => p + 1)}
                       disabled={chunksData.last}
-                      className="rounded-lg border border-slate-200 bg-white p-1 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                      className="rounded-lg border border-white/[0.08] bg-white/[0.03] p-1 text-slate-300 hover:bg-white/[0.08] hover:text-white disabled:opacity-40"
                     >
                       <ChevronRight className="h-4 w-4" />
                     </button>
@@ -637,13 +638,13 @@ export default function RepositoryDetailPage() {
         {/* Semantic Search View */}
         {activeTab === 'search' && (
           <section className="space-y-6">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0c101d] p-6 shadow-xl space-y-4">
               <div className="space-y-1">
-                <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-indigo-500" />
+                <h2 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-indigo-400" />
                   <span>Hybrid Semantic & Keyword Code Search</span>
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-400">
                   Search across functions, classes, and logic using natural language or exact keywords.
                 </p>
               </div>
@@ -657,7 +658,7 @@ export default function RepositoryDetailPage() {
                       placeholder="e.g. 'How does authentication work?', 'JWT validation logic', 'Zip Slip security'"
                       value={semanticQuery}
                       onChange={(e) => setSemanticQuery(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 py-2 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 shadow-sm"
+                      className="w-full rounded-xl border border-white/[0.08] bg-black/40 pl-10 pr-4 py-2 text-xs text-white placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 shadow-sm"
                     />
                   </div>
 
@@ -665,7 +666,7 @@ export default function RepositoryDetailPage() {
                     <select
                       value={topK}
                       onChange={(e) => setTopK(Number(e.target.value))}
-                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 shadow-sm focus:border-indigo-500 focus:outline-none"
+                      className="rounded-xl border border-white/[0.08] bg-[#0d1322] px-3 py-2 text-xs text-slate-200 shadow-sm focus:border-indigo-500 focus:outline-none"
                     >
                       <option value={5}>Top 5 chunks</option>
                       <option value={10}>Top 10 chunks</option>
@@ -675,7 +676,7 @@ export default function RepositoryDetailPage() {
                     <button
                       type="submit"
                       disabled={isSearching || !semanticQuery.trim()}
-                      className="flex items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:opacity-50 shrink-0"
+                      className="flex items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-5 py-2 text-xs font-semibold text-white shadow-glow transition hover:bg-indigo-500 disabled:opacity-50 shrink-0"
                     >
                       {isSearching ? (
                         <>
@@ -693,14 +694,14 @@ export default function RepositoryDetailPage() {
                 </div>
 
                 {/* Suggestions */}
-                <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-slate-500">
-                  <span className="font-medium">Try searching:</span>
+                <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-slate-400">
+                  <span className="font-medium text-slate-300">Try searching:</span>
                   {['JWT authentication', 'Zip extraction security', 'Low value code detector', 'Gemini embeddings'].map((pill) => (
                     <button
                       key={pill}
                       type="button"
                       onClick={() => { setSemanticQuery(pill); }}
-                      className="rounded-lg bg-slate-100 px-2.5 py-0.5 font-mono text-slate-600 hover:bg-slate-200 transition"
+                      className="rounded-lg bg-white/[0.04] border border-white/[0.08] px-2.5 py-0.5 font-mono text-slate-300 hover:bg-white/[0.08] hover:text-white transition"
                     >
                       {pill}
                     </button>
@@ -709,7 +710,7 @@ export default function RepositoryDetailPage() {
               </form>
 
               {searchError && (
-                <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+                <div className="rounded-xl border border-rose-500/30 bg-rose-950/40 p-3 text-xs text-rose-300">
                   {searchError}
                 </div>
               )}
@@ -719,45 +720,45 @@ export default function RepositoryDetailPage() {
             {searchResults && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-semibold text-slate-900">
+                  <h3 className="text-xs font-semibold text-white">
                     Ranked Results ({searchResults.length} chunks retrieved)
                   </h3>
                 </div>
 
                 {searchResults.length === 0 ? (
-                  <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-                    <p className="text-xs text-slate-500">No matching code chunks found for this query.</p>
+                  <div className="rounded-2xl border border-white/[0.08] bg-[#0c101d] p-8 text-center">
+                    <p className="text-xs text-slate-400">No matching code chunks found for this query.</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {searchResults.map((result, idx) => (
                       <div
                         key={result.id || idx}
-                        className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-3 transition hover:border-indigo-200"
+                        className="rounded-2xl border border-white/[0.08] bg-[#0c101d] p-5 shadow-xl space-y-3 transition hover:border-indigo-500/40"
                       >
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/[0.06] pb-3">
                           <div className="flex items-center gap-2">
-                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-bold text-indigo-700">
+                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-950/80 border border-indigo-500/40 text-[10px] font-bold text-indigo-300">
                               #{idx + 1}
                             </span>
-                            <span className="font-mono text-xs font-bold text-slate-900">
+                            <span className="font-mono text-xs font-bold text-white">
                               {result.filePath}
                             </span>
-                            <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+                            <span className="inline-flex items-center rounded-md bg-white/[0.05] px-2 py-0.5 text-[11px] font-mono text-slate-300 border border-white/[0.05]">
                               L{result.startLine} &ndash; L{result.endLine}
                             </span>
                           </div>
 
                           <div className="flex items-center gap-2 text-xs">
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 font-semibold text-emerald-700 border border-emerald-200">
-                              <Sparkles className="h-3 w-3 text-emerald-600" />
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-950/60 px-2.5 py-0.5 font-semibold text-emerald-300 border border-emerald-500/30">
+                              <Sparkles className="h-3 w-3 text-emerald-400" />
                               {(result.score * 100).toFixed(1)}% match
                             </span>
                           </div>
                         </div>
 
                         {/* Code snippet */}
-                        <div className="rounded-xl bg-slate-900 p-3 font-mono text-[11px] text-slate-100 overflow-x-auto max-h-72">
+                        <div className="rounded-xl bg-[#070a12] border border-white/[0.08] p-3.5 font-mono text-[11px] text-slate-200 overflow-x-auto max-h-72">
                           <pre className="whitespace-pre overflow-x-auto">{result.content}</pre>
                         </div>
                       </div>
@@ -772,14 +773,14 @@ export default function RepositoryDetailPage() {
         {/* Architecture Overview View */}
         {activeTab === 'architecture' && (
           <section className="space-y-6">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0c101d] p-6 shadow-xl space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.06] pb-4">
                 <div className="space-y-1">
-                  <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                    <Compass className="h-4 w-4 text-purple-600" />
+                  <h2 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Compass className="h-4 w-4 text-purple-400" />
                     <span>Repository Architecture Overview</span>
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-400">
                     High-level structural synthesis generated from representative manifests, entry points, and directory sampling.
                   </p>
                 </div>
@@ -789,21 +790,21 @@ export default function RepositoryDetailPage() {
                     type="button"
                     onClick={() => fetchArchitecture(true)}
                     disabled={loadingArchitecture}
-                    className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition disabled:opacity-50"
+                    className="flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs font-semibold text-slate-300 shadow-sm hover:bg-white/[0.08] hover:text-white transition disabled:opacity-50"
                   >
-                    <RefreshCw className={`h-3.5 w-3.5 text-purple-600 ${loadingArchitecture ? 'animate-spin' : ''}`} />
+                    <RefreshCw className={`h-3.5 w-3.5 text-purple-400 ${loadingArchitecture ? 'animate-spin' : ''}`} />
                     <span>Regenerate</span>
                   </button>
                 </div>
               </div>
 
               {loadingArchitecture ? (
-                <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-500">
-                  <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-                  <p className="text-xs font-medium">Analyzing codebase architecture and module hierarchy...</p>
+                <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
+                  <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
+                  <p className="text-xs font-mono">Analyzing codebase architecture and module hierarchy...</p>
                 </div>
               ) : architectureError ? (
-                <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-700">
+                <div className="rounded-xl border border-rose-500/30 bg-rose-950/40 p-4 text-xs text-rose-300">
                   {architectureError}
                 </div>
               ) : architectureData ? (
@@ -811,15 +812,15 @@ export default function RepositoryDetailPage() {
                   {/* Tech Stack Pills */}
                   {architectureData.technologies && architectureData.technologies.length > 0 && (
                     <div className="space-y-2">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                        <Cpu className="h-3.5 w-3.5 text-purple-500" />
-                        <span>Detected Technologies & Tools</span>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 font-mono">
+                        <Cpu className="h-3.5 w-3.5 text-purple-400" />
+                        <span>Detected Technologies &amp; Tools</span>
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {architectureData.technologies.map((tech) => (
                           <span
                             key={tech}
-                            className="rounded-lg bg-purple-50 border border-purple-200 px-2.5 py-1 text-xs font-semibold text-purple-700"
+                            className="rounded-lg bg-purple-950/50 border border-purple-500/30 px-2.5 py-1 text-xs font-semibold text-purple-300 font-mono"
                           >
                             {tech}
                           </span>
@@ -831,15 +832,15 @@ export default function RepositoryDetailPage() {
                   {/* Modules Pills */}
                   {architectureData.modules && architectureData.modules.length > 0 && (
                     <div className="space-y-2">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                        <Boxes className="h-3.5 w-3.5 text-purple-500" />
-                        <span>Core Modules & Top Directories</span>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 font-mono">
+                        <Boxes className="h-3.5 w-3.5 text-purple-400" />
+                        <span>Core Modules &amp; Top Directories</span>
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {architectureData.modules.map((mod) => (
                           <span
                             key={mod}
-                            className="rounded-lg bg-slate-100 border border-slate-200 px-2.5 py-1 text-xs font-mono font-medium text-slate-700"
+                            className="rounded-lg bg-white/[0.03] border border-white/[0.08] px-2.5 py-1 text-xs font-mono text-slate-300"
                           >
                             {mod}
                           </span>
@@ -849,7 +850,7 @@ export default function RepositoryDetailPage() {
                   )}
 
                   {/* Overview Text */}
-                  <div className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
+                  <div className="rounded-2xl border border-white/[0.08] bg-[#070a12] p-7 shadow-xl">
                     <GroundedMarkdown
                       content={architectureData.overviewText}
                       onCitationClick={(fp, start, end) => {
@@ -866,25 +867,25 @@ export default function RepositoryDetailPage() {
         {/* Bug Investigation View */}
         {activeTab === 'bug' && (
           <section className="space-y-6">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0c101d] p-6 shadow-xl space-y-4">
               <div className="space-y-1">
-                <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <Bug className="h-4 w-4 text-rose-500" />
-                  <span>Bug & Stack Trace Investigator</span>
+                <h2 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Bug className="h-4 w-4 text-rose-400" />
+                  <span>Bug &amp; Stack Trace Investigator</span>
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-400">
                   Paste an exception stack trace or error log to pinpoint the responsible source files and lines with grounded fix recommendations.
                 </p>
               </div>
 
               <form onSubmit={handleInvestigateBug} className="space-y-4">
                 {/* Single Repository File Selector */}
-                <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/60 p-3.5">
+                <div className="space-y-2 rounded-xl border border-white/[0.08] bg-black/20 p-3.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
-                      <FileCode2 className="h-3.5 w-3.5 text-rose-500" />
+                    <label className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+                      <FileCode2 className="h-3.5 w-3.5 text-rose-400" />
                       <span>Select Target File to Inspect (1 File at a time)</span>
-                      <span className="text-[10px] font-normal text-slate-500 hidden sm:inline">
+                      <span className="text-[10px] font-normal text-slate-400 hidden sm:inline">
                         &mdash; Loads file source code directly into the editor
                       </span>
                     </label>
@@ -892,7 +893,7 @@ export default function RepositoryDetailPage() {
                       <button
                         type="button"
                         onClick={handleClearSelectedFile}
-                        className="text-[11px] font-medium text-rose-600 hover:text-rose-800 transition"
+                        className="text-[11px] font-medium text-rose-400 hover:text-rose-300 transition"
                       >
                         Clear selected file
                       </button>
@@ -901,17 +902,17 @@ export default function RepositoryDetailPage() {
 
                   {/* Selected File Active Badge */}
                   {selectedBugFile && (
-                    <div className="flex items-center justify-between rounded-lg bg-rose-50 border border-rose-200 px-3 py-1.5 text-xs">
+                    <div className="flex items-center justify-between rounded-lg bg-rose-950/60 border border-rose-500/30 px-3 py-1.5 text-xs">
                       <div className="flex items-center gap-2 truncate">
-                        <FileCode2 className="h-3.5 w-3.5 text-rose-600 shrink-0" />
-                        <span className="font-mono font-bold text-rose-900 truncate text-[11px]">
+                        <FileCode2 className="h-3.5 w-3.5 text-rose-400 shrink-0" />
+                        <span className="font-mono font-bold text-rose-200 truncate text-[11px]">
                           {selectedBugFile}
                         </span>
                       </div>
                       <button
                         type="button"
                         onClick={handleClearSelectedFile}
-                        className="text-xs font-semibold text-rose-600 hover:text-rose-800 flex items-center gap-1 shrink-0 ml-2"
+                        className="text-xs font-semibold text-rose-400 hover:text-rose-300 flex items-center gap-1 shrink-0 ml-2"
                       >
                         <span>Remove</span>
                         <span className="font-bold text-sm leading-none">&times;</span>
@@ -932,7 +933,7 @@ export default function RepositoryDetailPage() {
                           setFileSelectorOpen(true);
                         }}
                         onFocus={() => setFileSelectorOpen(true)}
-                        className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-8 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 shadow-sm"
+                        className="w-full rounded-xl border border-white/[0.08] bg-black/40 pl-9 pr-8 py-1.5 text-xs text-white placeholder:text-slate-400 focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 shadow-sm"
                       />
                       {fileFilterInput && (
                         <button
@@ -941,7 +942,7 @@ export default function RepositoryDetailPage() {
                             setFileFilterInput('');
                             setFileSelectorOpen(false);
                           }}
-                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-bold"
                         >
                           &times;
                         </button>
@@ -954,9 +955,9 @@ export default function RepositoryDetailPage() {
                           className="fixed inset-0 z-20"
                           onClick={() => setFileSelectorOpen(false)}
                         />
-                        <div className="absolute z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl divide-y divide-slate-100">
+                        <div className="absolute z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-white/[0.1] bg-[#0d1322] p-1.5 shadow-2xl divide-y divide-white/[0.06]">
                           {filteredRepoFiles.length === 0 ? (
-                            <div className="p-3 text-center text-xs text-slate-400">
+                            <div className="p-3 text-center text-xs text-slate-400 font-mono">
                               No matching repository files found.
                             </div>
                           ) : (
@@ -969,27 +970,27 @@ export default function RepositoryDetailPage() {
                                   onClick={() => handleSelectBugFile(file.filePath)}
                                   className={`flex w-full items-center justify-between px-3 py-2 text-left text-xs transition rounded-lg ${
                                     isSelected
-                                      ? 'bg-rose-50/90 text-rose-800 font-semibold'
-                                      : 'text-slate-700 hover:bg-slate-50'
+                                      ? 'bg-rose-950/60 text-rose-200 font-semibold border border-rose-500/30'
+                                      : 'text-slate-300 hover:bg-white/[0.05]'
                                   }`}
                                 >
                                   <div className="flex items-center gap-2 truncate pr-2">
                                     <FileCode2
                                       className={`h-3.5 w-3.5 shrink-0 ${
-                                        isSelected ? 'text-rose-600' : 'text-slate-400'
+                                        isSelected ? 'text-rose-400' : 'text-slate-400'
                                       }`}
                                     />
                                     <span className="font-mono truncate text-[11px]">{file.filePath}</span>
                                   </div>
                                   <div className="flex items-center gap-2 shrink-0">
                                     {file.language && (
-                                      <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono text-slate-500">
+                                      <span className="rounded bg-white/[0.05] px-1.5 py-0.5 text-[10px] font-mono text-slate-400">
                                         {file.language}
                                       </span>
                                     )}
                                     <span
                                       className={`text-[11px] font-bold ${
-                                        isSelected ? 'text-rose-600' : 'text-slate-400'
+                                        isSelected ? 'text-rose-400' : 'text-slate-400'
                                       }`}
                                     >
                                       {isSelected ? '✓ Selected' : 'Select'}
@@ -1007,8 +1008,8 @@ export default function RepositoryDetailPage() {
 
                 <div className="space-y-2 relative">
                   {loadingFileContent && (
-                    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/80 backdrop-blur-xs">
-                      <div className="flex items-center gap-2 text-xs font-semibold text-rose-600">
+                    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-black/60 backdrop-blur-xs">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-rose-400 font-mono">
                         <Loader2 className="h-4 w-4 animate-spin" />
                         <span>Loading file source code...</span>
                       </div>
@@ -1024,24 +1025,24 @@ export default function RepositoryDetailPage() {
                     }
                     value={bugInput}
                     onChange={(e) => setBugInput(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-white p-3.5 font-mono text-xs focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 shadow-sm"
+                    className="w-full rounded-xl border border-white/[0.08] bg-black/40 p-3.5 font-mono text-xs text-white placeholder-slate-400 focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 shadow-sm"
                   />
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
-                    <span className="font-medium">Sample Traces:</span>
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                    <span className="font-medium text-slate-300">Sample Traces:</span>
                     <button
                       type="button"
                       onClick={() => setBugInput("java.lang.NullPointerException: Cannot invoke method\n    at com.example.coderag.security.JwtService.validateToken(JwtService.java:42)\n    at com.example.coderag.controller.AuthController.login(AuthController.java:30)")}
-                      className="rounded-lg bg-slate-100 px-2.5 py-0.5 font-mono text-slate-600 hover:bg-slate-200 transition"
+                      className="rounded-lg bg-white/[0.04] border border-white/[0.08] px-2.5 py-0.5 font-mono text-slate-300 hover:bg-white/[0.08] hover:text-white transition"
                     >
                       Java NPE
                     </button>
                     <button
                       type="button"
                       onClick={() => setBugInput("TypeError: Cannot read property 'map' of undefined\n    at RepositoryList (src/app/dashboard/page.tsx:45:18)")}
-                      className="rounded-lg bg-slate-100 px-2.5 py-0.5 font-mono text-slate-600 hover:bg-slate-200 transition"
+                      className="rounded-lg bg-white/[0.04] border border-white/[0.08] px-2.5 py-0.5 font-mono text-slate-300 hover:bg-white/[0.08] hover:text-white transition"
                     >
                       React / Next.js TypeError
                     </button>
@@ -1050,7 +1051,7 @@ export default function RepositoryDetailPage() {
                   <button
                     type="submit"
                     disabled={loadingBug || !bugInput.trim()}
-                    className="flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 px-5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-rose-500 disabled:opacity-50 shrink-0"
+                    className="flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 px-5 py-2 text-xs font-semibold text-white shadow-glow transition hover:bg-rose-500 disabled:opacity-50 shrink-0"
                   >
                     {loadingBug ? (
                       <>
@@ -1068,7 +1069,7 @@ export default function RepositoryDetailPage() {
               </form>
 
               {bugError && (
-                <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+                <div className="rounded-xl border border-rose-500/30 bg-rose-950/40 p-3 text-xs text-rose-300">
                   {bugError}
                 </div>
               )}
@@ -1077,18 +1078,18 @@ export default function RepositoryDetailPage() {
             {/* Investigation Output */}
             {bugResponse && (
               <div className="space-y-5">
-                <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <h3 className="text-xs font-bold text-slate-900 flex items-center gap-2">
-                      <Terminal className="h-4 w-4 text-rose-500" />
-                      <span>Diagnostic Analysis & Root Cause</span>
+                <div className="rounded-2xl border border-white/[0.08] bg-[#0c101d] p-6 shadow-xl space-y-4">
+                  <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+                    <h3 className="text-xs font-bold text-white flex items-center gap-2">
+                      <Terminal className="h-4 w-4 text-rose-400" />
+                      <span>Diagnostic Analysis &amp; Root Cause</span>
                     </h3>
 
                     {bugResponse.identifiedFiles && bugResponse.identifiedFiles.length > 0 && (
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] text-slate-500 font-medium">Direct Signals:</span>
+                        <span className="text-[11px] text-slate-400 font-medium font-mono">Direct Signals:</span>
                         {bugResponse.identifiedFiles.map((f) => (
-                          <span key={f} className="rounded bg-rose-50 border border-rose-200 px-2 py-0.5 font-mono text-[10px] font-bold text-rose-700">
+                          <span key={f} className="rounded bg-rose-950/60 border border-rose-500/30 px-2 py-0.5 font-mono text-[10px] font-bold text-rose-300">
                             {f}
                           </span>
                         ))}
@@ -1096,7 +1097,7 @@ export default function RepositoryDetailPage() {
                     )}
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
+                  <div className="rounded-2xl border border-white/[0.08] bg-[#070a12] p-7 shadow-xl">
                     <GroundedMarkdown
                       content={bugResponse.analysis}
                       onCitationClick={(fp, start, end) => {
@@ -1109,34 +1110,34 @@ export default function RepositoryDetailPage() {
                 {/* Relevant Chunks Inspected */}
                 {bugResponse.relevantChunks && bugResponse.relevantChunks.length > 0 && (
                   <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-slate-700">
+                    <h4 className="text-xs font-bold text-slate-200">
                       Inspected Relevant Code Chunks ({bugResponse.relevantChunks.length})
                     </h4>
                     <div className="space-y-3">
                       {bugResponse.relevantChunks.map((chunk, idx) => (
                         <div
                           key={chunk.id || idx}
-                          className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm space-y-2.5"
+                          className="rounded-2xl border border-white/[0.08] bg-[#0c101d] p-4 shadow-xl space-y-2.5"
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <FileCode2 className="h-4 w-4 text-indigo-500" />
-                              <span className="font-mono text-xs font-bold text-slate-900">{chunk.filePath}</span>
-                              <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-mono text-slate-600">
+                              <FileCode2 className="h-4 w-4 text-indigo-400" />
+                              <span className="font-mono text-xs font-bold text-white">{chunk.filePath}</span>
+                              <span className="rounded bg-white/[0.05] px-2 py-0.5 text-[10px] font-mono text-slate-300 border border-white/[0.05]">
                                 L{chunk.startLine}&ndash;L{chunk.endLine}
                               </span>
                             </div>
 
                             <Link
                               href={`/repositories/${repoId}/chat?file=${encodeURIComponent(chunk.filePath)}&startLine=${chunk.startLine}&endLine=${chunk.endLine}`}
-                              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+                              className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition"
                             >
                               <span>Open in Monaco</span>
                               <ExternalLink className="h-3 w-3" />
                             </Link>
                           </div>
 
-                          <div className="rounded-xl bg-slate-900 p-3 font-mono text-[11px] text-slate-100 overflow-x-auto max-h-60">
+                          <div className="rounded-xl bg-[#070a12] border border-white/[0.08] p-3.5 font-mono text-[11px] text-slate-200 overflow-x-auto max-h-60">
                             <pre className="whitespace-pre overflow-x-auto">{chunk.content}</pre>
                           </div>
                         </div>

@@ -72,29 +72,29 @@ export function ChatPanel({
   const activeConv = conversations.find((c) => c.id === activeConversationId);
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+    <div className="flex h-full flex-col rounded-2xl border border-white/[0.08] bg-[#0c101d] shadow-2xl overflow-hidden">
       {/* Top Thread Bar */}
-      <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/75 px-4 py-2.5">
+      <div className="flex items-center justify-between border-b border-white/[0.08] bg-[#090d18] px-4 py-2.5">
         <div className="relative flex-1 mr-2">
           <button
             type="button"
             onClick={() => setIsThreadDropdownOpen(!isThreadDropdownOpen)}
-            className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50"
+            className="flex w-full items-center justify-between gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-white/[0.07]"
           >
             <div className="flex items-center gap-2 truncate">
-              <MessageSquare className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
-              <span className="truncate">{activeConv?.title || 'Current Conversation'}</span>
+              <MessageSquare className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
+              <span className="truncate">{activeConv?.title || 'Current Thread'}</span>
             </div>
             <ChevronDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
           </button>
 
           {/* Thread Switcher Dropdown */}
           {isThreadDropdownOpen && (
-            <div className="absolute left-0 top-full z-30 mt-1 max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">
+            <div className="absolute left-0 top-full z-30 mt-1 max-h-60 w-full overflow-y-auto rounded-xl border border-white/[0.1] bg-[#0d1322] p-1.5 shadow-2xl backdrop-blur-xl">
               {loadingConversations ? (
-                <div className="py-4 text-center text-xs text-slate-400">Loading threads...</div>
+                <div className="py-4 text-center text-xs font-mono text-slate-400">Loading threads...</div>
               ) : conversations.length === 0 ? (
-                <div className="py-4 text-center text-xs text-slate-400">No conversations yet</div>
+                <div className="py-4 text-center text-xs font-mono text-slate-400">No conversations yet</div>
               ) : (
                 conversations.map((conv) => (
                   <button
@@ -106,12 +106,12 @@ export function ChatPanel({
                     }}
                     className={`w-full rounded-lg px-3 py-2 text-left text-xs transition flex flex-col ${
                       conv.id === activeConversationId
-                        ? 'bg-indigo-50 text-indigo-900 font-semibold'
-                        : 'text-slate-700 hover:bg-slate-50'
+                        ? 'bg-indigo-600/30 text-indigo-300 font-semibold border border-indigo-500/30'
+                        : 'text-slate-300 hover:bg-white/[0.05]'
                     }`}
                   >
                     <span className="truncate">{conv.title || 'Untitled Thread'}</span>
-                    <span className="text-[10px] text-slate-400 font-normal mt-0.5">
+                    <span className="text-[10px] text-slate-400 font-mono mt-0.5">
                       {new Date(conv.updatedAt || conv.createdAt).toLocaleDateString(undefined, {
                         month: 'short',
                         day: 'numeric',
@@ -129,7 +129,7 @@ export function ChatPanel({
         <button
           type="button"
           onClick={onCreateConversation}
-          className="flex items-center gap-1 rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-500 shrink-0"
+          className="flex items-center gap-1 rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-glow transition hover:bg-indigo-500 shrink-0"
         >
           <Plus className="h-3.5 w-3.5" />
           <span>New</span>
@@ -139,19 +139,19 @@ export function ChatPanel({
       {/* Messages Stream */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {loadingMessages ? (
-          <div className="flex h-full flex-col items-center justify-center gap-2 text-xs text-slate-400">
-            <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
+          <div className="flex h-full flex-col items-center justify-center gap-2 text-xs font-mono text-slate-400">
+            <Loader2 className="h-6 w-6 animate-spin text-indigo-400" />
             <span>Loading message history...</span>
           </div>
         ) : messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center text-center max-w-sm mx-auto py-8 space-y-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-inner">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
-              <h4 className="text-xs font-semibold text-slate-900">Ask anything about this repo</h4>
-              <p className="mt-1 text-[11px] text-slate-500">
-                Ask a question to retrieve code chunks with exact line citations.
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">Ask about this codebase</h4>
+              <p className="mt-1 text-[11px] text-slate-400">
+                Ask anything to retrieve code chunks with exact Monaco line citations.
               </p>
             </div>
 
@@ -166,10 +166,10 @@ export function ChatPanel({
                   key={idx}
                   type="button"
                   onClick={() => onSendMessage(prompt)}
-                  className="w-full rounded-xl border border-slate-200 p-2 text-left text-xs text-slate-700 hover:border-indigo-300 hover:bg-indigo-50/60 hover:text-indigo-900 transition flex items-center justify-between"
+                  className="w-full rounded-xl border border-white/[0.08] bg-white/[0.02] p-2 text-left text-xs text-slate-300 hover:border-indigo-500/40 hover:bg-indigo-950/30 hover:text-indigo-200 transition flex items-center justify-between"
                 >
                   <span className="truncate">{prompt}</span>
-                  <Sparkles className="h-3 w-3 text-indigo-500 shrink-0 ml-1" />
+                  <Sparkles className="h-3 w-3 text-indigo-400 shrink-0 ml-1" />
                 </button>
               ))}
             </div>
@@ -191,7 +191,7 @@ export function ChatPanel({
                   className={`max-w-[88%] rounded-2xl p-3.5 shadow-sm ${
                     msg.role === 'USER'
                       ? 'bg-indigo-600 text-white rounded-tr-none'
-                      : 'bg-slate-50 border border-slate-200/80 text-slate-900 rounded-tl-none'
+                      : 'bg-[#0f1629] border border-white/[0.08] text-slate-100 rounded-tl-none'
                   }`}
                 >
                   {msg.role === 'USER' ? (
@@ -206,7 +206,7 @@ export function ChatPanel({
                 </div>
 
                 {msg.role === 'USER' && (
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-200 text-slate-700 shadow-sm mt-0.5">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-slate-300 shadow-sm mt-0.5 border border-white/[0.08]">
                     <UserIcon className="h-3.5 w-3.5" />
                   </div>
                 )}
@@ -218,10 +218,10 @@ export function ChatPanel({
                 <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm mt-0.5">
                   <Bot className="h-3.5 w-3.5" />
                 </div>
-                <div className="rounded-2xl rounded-tl-none bg-slate-50 border border-slate-200/80 p-3.5 shadow-sm flex items-center gap-2.5">
-                  <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
-                  <span className="text-xs text-slate-500 font-medium">
-                    Retrieving code & generating grounded answer...
+                <div className="rounded-2xl rounded-tl-none bg-[#0f1629] border border-white/[0.08] p-3.5 shadow-sm flex items-center gap-2.5">
+                  <Loader2 className="h-4 w-4 animate-spin text-indigo-400" />
+                  <span className="text-xs text-slate-400 font-mono">
+                    Retrieving code chunks &amp; generating grounded answer...
                   </span>
                 </div>
               </div>
@@ -233,14 +233,14 @@ export function ChatPanel({
 
       {/* Chat Error Banner */}
       {chatError && (
-        <div className="mx-3 mb-2 flex items-center gap-2 rounded-xl bg-rose-50 p-2.5 text-xs text-rose-700 border border-rose-200">
-          <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600" />
+        <div className="mx-3 mb-2 flex items-center gap-2 rounded-xl bg-rose-950/60 p-2.5 text-xs text-rose-300 border border-rose-500/30">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-rose-400" />
           <span>{chatError}</span>
         </div>
       )}
 
       {/* Input Box */}
-      <div className="border-t border-slate-200 p-3 bg-white">
+      <div className="border-t border-white/[0.08] p-3 bg-[#090d18]">
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
           <input
             type="text"
@@ -248,12 +248,12 @@ export function ChatPanel({
             onChange={(e) => setInputPrompt(e.target.value)}
             placeholder="Ask a question about this repository's code..."
             disabled={isSendingMessage}
-            className="flex-1 rounded-xl border border-slate-200 bg-slate-50/60 px-3.5 py-2 text-xs placeholder-slate-400 focus:border-indigo-600 focus:bg-white focus:outline-none focus:ring-1 focus:ring-indigo-600 disabled:opacity-50"
+            className="flex-1 rounded-xl border border-white/[0.08] bg-black/40 px-3.5 py-2 text-xs text-white placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={isSendingMessage || !inputPrompt.trim()}
-            className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm transition hover:bg-indigo-500 disabled:opacity-40 shrink-0"
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-glow transition hover:bg-indigo-500 disabled:opacity-40 shrink-0"
           >
             {isSendingMessage ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -262,9 +262,9 @@ export function ChatPanel({
             )}
           </button>
         </form>
-        <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-400 px-1">
-          <span>Grounded Gemini 1.5 + Qdrant</span>
-          <span>Click citations to view code</span>
+        <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-400 font-mono px-1">
+          <span>Grounded Gemini + Qdrant</span>
+          <span>Click citations to highlight in Monaco</span>
         </div>
       </div>
     </div>

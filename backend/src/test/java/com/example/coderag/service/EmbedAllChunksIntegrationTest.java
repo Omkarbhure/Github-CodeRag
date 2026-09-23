@@ -4,6 +4,7 @@ import com.example.coderag.model.CodeChunk;
 import com.example.coderag.repository.CodeChunkRepository;
 import com.example.coderag.vector.EmbeddingService;
 import com.example.coderag.vector.VectorStoreService;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @SpringBootTest
+@Disabled("Manual utility test for embedding")
 public class EmbedAllChunksIntegrationTest {
 
     @Autowired

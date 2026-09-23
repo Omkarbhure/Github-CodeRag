@@ -44,6 +44,7 @@ app:
     domain: ${COOKIE_DOMAIN:}
     secure: ${COOKIE_SECURE:false}
     same-site: ${COOKIE_SAME_SITE:Lax}
+    session-only: ${COOKIE_SESSION_ONLY:true}
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
   cors:
     allowed-origins: ${ALLOWED_ORIGINS:${app.frontend-url:http://localhost:3000,http://localhost:8081}}

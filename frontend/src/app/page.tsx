@@ -7,7 +7,7 @@ import { LandingFooter } from '@/components/landing/LandingFooter';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between">
+    <div className="min-h-screen bg-[#07090e] text-slate-100 flex flex-col justify-between">
       <div>
         <LandingNavbar />
         <main>

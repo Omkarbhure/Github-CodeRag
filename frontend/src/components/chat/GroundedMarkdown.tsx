@@ -116,7 +116,7 @@ export function GroundedMarkdown({
     while ((match = inlineRegex.exec(raw)) !== null) {
       if (match.index > lastIdx) {
         nodes.push(
-          <span key={`${prefix}-p-${k++}`} className="text-slate-900 font-medium">
+          <span key={`${prefix}-p-${k++}`} className="text-slate-200 font-normal">
             {raw.substring(lastIdx, match.index)}
           </span>
         );
@@ -127,7 +127,7 @@ export function GroundedMarkdown({
         nodes.push(
           <code
             key={`${prefix}-c-${k++}`}
-            className="inline-block mx-1 my-0.5 rounded-md bg-indigo-50/90 border border-indigo-200/80 px-2 py-0.5 font-mono text-[11.5px] font-bold text-indigo-900 shadow-xs"
+            className="inline-block mx-1 my-0.5 rounded-md bg-indigo-950/70 border border-indigo-500/30 px-2 py-0.5 font-mono text-[11.5px] font-semibold text-indigo-300 shadow-xs"
           >
             {tok.slice(1, -1)}
           </code>
@@ -136,7 +136,7 @@ export function GroundedMarkdown({
         nodes.push(
           <strong
             key={`${prefix}-b-${k++}`}
-            className="font-extrabold text-slate-950 px-0.5 text-[13px] sm:text-[13.5px] tracking-tight"
+            className="font-bold text-white px-0.5 text-[13px] sm:text-[13.5px] tracking-tight"
           >
             {tok.slice(2, -2)}
           </strong>
@@ -148,7 +148,7 @@ export function GroundedMarkdown({
 
     if (lastIdx < raw.length) {
       nodes.push(
-        <span key={`${prefix}-end-${k++}`} className="text-slate-900 font-medium">
+        <span key={`${prefix}-end-${k++}`} className="text-slate-200 font-normal">
           {raw.substring(lastIdx)}
         </span>
       );
@@ -161,7 +161,7 @@ export function GroundedMarkdown({
   const blocks = content.split(/(```[\s\S]*?```)/g);
 
   return (
-    <div className={`space-y-4 text-[13px] sm:text-sm text-slate-900 leading-relaxed ${className}`}>
+    <div className={`space-y-4 text-[13px] sm:text-sm text-slate-200 leading-relaxed ${className}`}>
       {blocks.map((block, blockIdx) => {
         if (!block) return null;
 
@@ -181,9 +181,9 @@ export function GroundedMarkdown({
           return (
             <div
               key={`block-${blockIdx}`}
-              className="my-3.5 overflow-hidden rounded-xl border border-slate-800 bg-slate-950 shadow-md"
+              className="my-3.5 overflow-hidden rounded-xl border border-white/[0.08] bg-[#070a12] shadow-md"
             >
-              <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900/90 px-3.5 py-1.5 text-[11px] font-mono text-slate-300">
+              <div className="flex items-center justify-between border-b border-white/[0.08] bg-[#0d1220] px-3.5 py-1.5 text-[11px] font-mono text-slate-300">
                 <div className="flex items-center gap-1.5 font-bold text-slate-200">
                   <Terminal className="h-3.5 w-3.5 text-indigo-400" />
                   <span>{language}</span>
@@ -191,7 +191,7 @@ export function GroundedMarkdown({
                 <button
                   type="button"
                   onClick={() => handleCopy(codeBody, blockIdx)}
-                  className="flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-bold text-slate-200 transition hover:bg-slate-800 hover:text-white"
+                  className="flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-bold text-slate-300 transition hover:bg-white/[0.08] hover:text-white"
                 >
                   {isCopied ? (
                     <>
@@ -206,7 +206,7 @@ export function GroundedMarkdown({
                   )}
                 </button>
               </div>
-              <pre className="overflow-x-auto p-4 font-mono text-xs font-medium text-slate-100 whitespace-pre leading-relaxed">
+              <pre className="overflow-x-auto p-4 font-mono text-xs font-medium text-slate-200 whitespace-pre leading-relaxed">
                 {codeBody}
               </pre>
             </div>
@@ -230,9 +230,9 @@ export function GroundedMarkdown({
           // Header 1: # Title
           if (trimmed.startsWith('# ')) {
             elements.push(
-              <div key={`h1-${blockIdx}-${i}`} className="mt-6 mb-3 pb-2.5 border-b-2 border-indigo-100">
-                <h1 className="text-lg sm:text-xl font-extrabold text-slate-950 flex items-center gap-2.5 tracking-tight">
-                  <Hash className="h-5 w-5 text-indigo-600 shrink-0" />
+              <div key={`h1-${blockIdx}-${i}`} className="mt-6 mb-3 pb-2.5 border-b border-white/[0.08]">
+                <h1 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2.5 tracking-tight">
+                  <Hash className="h-5 w-5 text-indigo-400 shrink-0" />
                   <span>{renderInline(trimmed.substring(2), `h1-${blockIdx}-${i}`)}</span>
                 </h1>
               </div>
@@ -244,9 +244,9 @@ export function GroundedMarkdown({
           // Header 2: ## Title
           if (trimmed.startsWith('## ')) {
             elements.push(
-              <div key={`h2-${blockIdx}-${i}`} className="mt-5 mb-3 pb-2 border-b border-slate-200">
-                <h2 className="text-base sm:text-lg font-extrabold text-slate-950 flex items-center gap-2 tracking-tight">
-                  <Layers className="h-4 w-4 text-indigo-600 shrink-0" />
+              <div key={`h2-${blockIdx}-${i}`} className="mt-5 mb-3 pb-2 border-b border-white/[0.08]">
+                <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2 tracking-tight">
+                  <Layers className="h-4 w-4 text-indigo-400 shrink-0" />
                   <span>{renderInline(trimmed.substring(3), `h2-${blockIdx}-${i}`)}</span>
                 </h2>
               </div>
@@ -258,10 +258,10 @@ export function GroundedMarkdown({
           // Header 3: ### Title (e.g. "### 1. High-Level Summary" or "### 4. Data Flow")
           if (trimmed.startsWith('### ')) {
             elements.push(
-              <div key={`h3-${blockIdx}-${i}`} className="mt-6 mb-3">
-                <div className="inline-flex items-center gap-2 rounded-xl bg-indigo-50 border border-indigo-200/80 px-3.5 py-2 shadow-xs">
-                  <Sparkles className="h-4 w-4 text-indigo-600 shrink-0" />
-                  <h3 className="text-sm sm:text-base font-extrabold text-indigo-950 tracking-tight">
+              <div key={`h3-${blockIdx}-${i}`} className="mt-5 mb-2.5">
+                <div className="inline-flex items-center gap-2 rounded-xl bg-indigo-950/60 border border-indigo-500/30 px-3.5 py-1.5 shadow-xs">
+                  <Sparkles className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
+                  <h3 className="text-xs sm:text-sm font-bold text-indigo-200 tracking-tight">
                     {renderInline(trimmed.substring(4), `h3-${blockIdx}-${i}`)}
                   </h3>
                 </div>
@@ -274,8 +274,8 @@ export function GroundedMarkdown({
           // Header 4: #### Title
           if (trimmed.startsWith('#### ')) {
             elements.push(
-              <h4 key={`h4-${blockIdx}-${i}`} className="text-sm font-extrabold text-slate-950 mt-4 mb-2 flex items-center gap-1.5">
-                <ChevronRight className="h-4 w-4 text-indigo-500 shrink-0" />
+              <h4 key={`h4-${blockIdx}-${i}`} className="text-xs sm:text-sm font-bold text-slate-200 mt-4 mb-2 flex items-center gap-1.5">
+                <ChevronRight className="h-4 w-4 text-indigo-400 shrink-0" />
                 <span>{renderInline(trimmed.substring(5), `h4-${blockIdx}-${i}`)}</span>
               </h4>
             );
@@ -299,22 +299,22 @@ export function GroundedMarkdown({
             }
 
             elements.push(
-              <ul key={`ul-${blockIdx}-${listItems[0].lineIdx}`} className="my-2.5 space-y-2 pl-1">
+              <ul key={`ul-${blockIdx}-${listItems[0].lineIdx}`} className="my-2 space-y-1.5 pl-1">
                 {listItems.map((li) => {
                   const isNested = li.indent > 0;
                   return (
                     <li
                       key={`li-${li.lineIdx}`}
                       className={`flex items-start gap-2.5 leading-relaxed ${
-                        isNested ? 'pl-6 text-slate-900 text-[12.5px]' : 'text-slate-950 font-medium text-[13px] sm:text-[13.5px]'
+                        isNested ? 'pl-5 text-slate-300 text-[12.5px]' : 'text-slate-200 text-[13px] sm:text-[13.5px]'
                       }`}
                     >
                       <span
-                        className={`mt-2 h-2 w-2 rounded-full shrink-0 shadow-xs ${
-                          isNested ? 'bg-slate-400' : 'bg-indigo-600 ring-2 ring-indigo-100'
+                        className={`mt-2 h-1.5 w-1.5 rounded-full shrink-0 shadow-xs ${
+                          isNested ? 'bg-slate-400' : 'bg-indigo-400 ring-2 ring-indigo-950'
                         }`}
                       />
-                      <div className="flex-1 min-w-0 font-medium text-slate-900 leading-normal">
+                      <div className="flex-1 min-w-0 text-slate-200 leading-normal">
                         {renderInline(li.text, `li-${blockIdx}-${li.lineIdx}`)}
                       </div>
                     </li>
@@ -341,13 +341,13 @@ export function GroundedMarkdown({
             }
 
             elements.push(
-              <ol key={`ol-${blockIdx}-${numItems[0].lineIdx}`} className="my-2.5 space-y-2 pl-1">
+              <ol key={`ol-${blockIdx}-${numItems[0].lineIdx}`} className="my-2 space-y-1.5 pl-1">
                 {numItems.map((item) => (
                   <li key={`ol-li-${item.lineIdx}`} className="flex items-start gap-2.5 leading-relaxed">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-[11px] font-extrabold text-white shadow-xs mt-0.5">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-[11px] font-bold text-white shadow-xs mt-0.5">
                       {item.num}
                     </span>
-                    <div className="flex-1 min-w-0 font-medium text-slate-900 text-[13px] sm:text-[13.5px] leading-normal">
+                    <div className="flex-1 min-w-0 text-slate-200 text-[13px] sm:text-[13.5px] leading-normal">
                       {renderInline(item.text, `ol-${blockIdx}-${item.lineIdx}`)}
                     </div>
                   </li>
@@ -359,14 +359,14 @@ export function GroundedMarkdown({
 
           // Regular paragraph
           elements.push(
-            <p key={`p-${blockIdx}-${i}`} className="leading-relaxed my-2 font-medium text-slate-900 text-[13px] sm:text-[13.5px]">
+            <p key={`p-${blockIdx}-${i}`} className="leading-relaxed my-1.5 text-slate-200 text-[13px] sm:text-[13.5px]">
               {renderInline(trimmed, `p-${blockIdx}-${i}`)}
             </p>
           );
           i++;
         }
 
-        return <div key={`text-block-${blockIdx}`} className="space-y-1.5">{elements}</div>;
+        return <div key={`text-block-${blockIdx}`} className="space-y-1">{elements}</div>;
       })}
     </div>
   );

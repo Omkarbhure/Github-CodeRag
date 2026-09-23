@@ -26,13 +26,19 @@ public class CookieService {
     @Value("${app.cookie.same-site:Lax}")
     private String cookieSameSite;
 
+    @Value("${app.cookie.session-only:true}")
+    private boolean cookieSessionOnly;
+
     public ResponseCookie createJwtCookie(String token, long maxAgeSeconds) {
         ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(cookieName, token)
                 .httpOnly(true)
                 .secure(cookieSecure)
                 .path("/")
-                .maxAge(Duration.ofSeconds(maxAgeSeconds))
                 .sameSite(cookieSameSite);
+
+        if (!cookieSessionOnly && maxAgeSeconds > 0) {
+            builder.maxAge(Duration.ofSeconds(maxAgeSeconds));
+        }
 
         if (StringUtils.hasText(cookieDomain)) {
             builder.domain(cookieDomain);
