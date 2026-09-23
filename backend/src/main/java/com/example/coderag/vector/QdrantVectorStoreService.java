@@ -33,7 +33,8 @@ public class QdrantVectorStoreService implements VectorStoreService {
     @org.springframework.beans.factory.annotation.Autowired
     public QdrantVectorStoreService(
             @Value("${app.qdrant.url:http://localhost:6333}") String qdrantUrl,
-            @Value("${app.qdrant.collection-name:code_chunks}") String collectionName
+            @Value("${app.qdrant.collection-name:code_chunks}") String collectionName,
+            @Value("${app.qdrant.api-key:}") String qdrantApiKey
     ) {
         this.collectionName = collectionName;
 
@@ -41,11 +42,16 @@ public class QdrantVectorStoreService implements VectorStoreService {
         requestFactory.setConnectTimeout(Duration.ofSeconds(5));
         requestFactory.setReadTimeout(Duration.ofSeconds(30));
 
-        this.restClient = RestClient.builder()
+        var builder = RestClient.builder()
                 .baseUrl(qdrantUrl)
                 .requestFactory(requestFactory)
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .build();
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+
+        if (qdrantApiKey != null && !qdrantApiKey.trim().isEmpty()) {
+            builder.defaultHeader("api-key", qdrantApiKey.trim());
+        }
+
+        this.restClient = builder.build();
     }
 
     // Secondary constructor for testing

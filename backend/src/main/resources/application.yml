@@ -72,6 +72,7 @@ app:
     quota-enabled: ${GEMINI_QUOTA_ENABLED:true}
   qdrant:
     url: ${QDRANT_URL:http://localhost:6333}
+    api-key: ${QDRANT_API_KEY:}
     collection-name: ${QDRANT_COLLECTION:code_chunks}
   hybrid-search:
     vector-weight: ${HYBRID_VECTOR_WEIGHT:0.7}
