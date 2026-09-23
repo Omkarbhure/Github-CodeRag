@@ -22,13 +22,6 @@ export function LandingNavbar() {
           </div>
         </Link>
 
-        {/* Navigation Links */}
-        <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-600">
-          <a href="#features" className="hover:text-indigo-600 transition">Features</a>
-          <a href="#demo" className="hover:text-indigo-600 transition">Workspace Preview</a>
-          <a href="#architecture" className="hover:text-indigo-600 transition">Capabilities</a>
-          <a href="#tech" className="hover:text-indigo-600 transition">Tech Stack</a>
-        </nav>
 
         {/* Actions */}
         <div className="flex items-center gap-3">

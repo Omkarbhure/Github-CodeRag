@@ -43,8 +43,8 @@ public class GeminiAnswerService implements AnswerGenerationService {
         this.quotaManager = quotaManager;
 
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(Duration.ofSeconds(10));
-        requestFactory.setReadTimeout(Duration.ofSeconds(45));
+        requestFactory.setConnectTimeout(Duration.ofSeconds(15));
+        requestFactory.setReadTimeout(Duration.ofSeconds(90));
 
         this.restClient = RestClient.builder()
                 .baseUrl(baseUrl)
@@ -131,18 +131,20 @@ public class GeminiAnswerService implements AnswerGenerationService {
                 contents
         );
 
-        int maxRetries = 2;
+        int maxRetries = 4;
         int attempt = 0;
-        long backoffMs = 1000;
+        long backoffMs = 2000;
+        String currentModel = (chatModel != null && !chatModel.isBlank()) ? chatModel : "gemini-3.6-flash";
 
         while (true) {
             try {
                 attempt++;
+                final String modelToCall = currentModel;
                 GeminiGenerateResponse response = restClient.post()
                         .uri(uriBuilder -> uriBuilder
                                 .path("/v1beta/models/{model}:generateContent")
                                 .queryParam("key", apiKey)
-                                .build(chatModel))
+                                .build(modelToCall))
                         .body(request)
                         .retrieve()
                         .body(GeminiGenerateResponse.class);
@@ -172,6 +174,12 @@ public class GeminiAnswerService implements AnswerGenerationService {
                     throw new IllegalStateException("Gemini API authentication failed (" + status.value() + "). Please check your GEMINI_API_KEY configuration.", e);
                 }
 
+                if (status.value() == 404 && !"gemini-3.6-flash".equals(currentModel)) {
+                    log.warn("Model {} returned 404. Falling back to gemini-3.6-flash", currentModel);
+                    currentModel = "gemini-3.6-flash";
+                    continue;
+                }
+
                 if (status.value() == 429) {
                     if (attempt <= maxRetries) {
                         log.warn("Gemini API rate limit (429) reached during chat generation. Retrying in {}ms (attempt {}/{})", backoffMs, attempt, maxRetries);
@@ -184,15 +192,19 @@ public class GeminiAnswerService implements AnswerGenerationService {
                         backoffMs *= 2;
                         continue;
                     }
-                    throw new RuntimeException("Gemini API rate limit exceeded after " + maxRetries + " retries.", e);
+                    throw new RuntimeException("Gemini API rate limit reached. Please retry in a few seconds.", e);
                 }
 
                 log.error("Gemini API client error: {} - {}", status, e.getResponseBodyAsString());
-                throw new RuntimeException("Gemini API client error (" + status.value() + "): " + e.getMessage(), e);
+                throw new RuntimeException("Gemini API error (" + status.value() + "): " + e.getMessage(), e);
 
             } catch (HttpServerErrorException e) {
                 if (attempt <= maxRetries) {
                     log.warn("Gemini API server error ({}). Retrying in {}ms (attempt {}/{})", e.getStatusCode(), backoffMs, attempt, maxRetries);
+                    if (attempt >= 2 && "gemini-3.6-flash".equals(currentModel)) {
+                        // Keep on gemini-3.6-flash or fallback if needed
+                        currentModel = "gemini-3.6-flash";
+                    }
                     try {
                         Thread.sleep(backoffMs);
                     } catch (InterruptedException ie) {
@@ -202,7 +214,21 @@ public class GeminiAnswerService implements AnswerGenerationService {
                     backoffMs *= 2;
                     continue;
                 }
-                throw new RuntimeException("Gemini API server error (" + e.getStatusCode() + "): " + e.getMessage(), e);
+                throw new RuntimeException("Gemini service is temporarily busy (" + e.getStatusCode().value() + "). Please retry in a few seconds.", e);
+
+            } catch (org.springframework.web.client.ResourceAccessException e) {
+                if (attempt <= maxRetries) {
+                    log.warn("Gemini API connection issue ({}). Retrying in {}ms (attempt {}/{})", e.getMessage(), backoffMs, attempt, maxRetries);
+                    try {
+                        Thread.sleep(backoffMs);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new RuntimeException("Interrupted during connection backoff", ie);
+                    }
+                    backoffMs *= 2;
+                    continue;
+                }
+                throw new RuntimeException("Gemini service connection timed out. Please retry.", e);
 
             } catch (Exception e) {
                 if (e instanceof IllegalStateException || (e.getMessage() != null && e.getMessage().contains("GEMINI_API_KEY"))) {

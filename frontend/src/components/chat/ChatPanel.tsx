@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Conversation, Message } from '@/types/repository';
 import { CitationChip } from './CitationChip';
+import { GroundedMarkdown } from './GroundedMarkdown';
 import {
   MessageSquare,
   Plus,
@@ -12,8 +13,6 @@ import {
   User as UserIcon,
   Sparkles,
   AlertTriangle,
-  Copy,
-  Check,
   ChevronDown
 } from 'lucide-react';
 
@@ -33,9 +32,9 @@ interface ChatPanelProps {
   isSendingMessage: boolean;
   chatError: string | null;
   activeCitation: ActiveCitation | null;
-  onSelectConversation: (id: string) => void;
+  onSelectConversation: (convId: string) => void;
   onCreateConversation: () => void;
-  onSendMessage: (prompt: string) => void;
+  onSendMessage: (content: string) => void;
   onCitationClick: (filePath: string, startLine: number, endLine: number) => void;
 }
 
@@ -54,23 +53,16 @@ export function ChatPanel({
   onSendMessage,
   onCitationClick
 }: ChatPanelProps) {
-  const [inputQuestion, setInputQuestion] = useState('');
-  const [copiedText, setCopiedText] = useState<string | null>(null);
+  const [inputPrompt, setInputPrompt] = useState('');
   const [isThreadDropdownOpen, setIsThreadDropdownOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedText(text);
-    setTimeout(() => setCopiedText(null), 2000);
-  };
-
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const prompt = inputQuestion.trim();
+    const prompt = inputPrompt.trim();
     if (!prompt || isSendingMessage) return;
     onSendMessage(prompt);
-    setInputQuestion('');
+    setInputPrompt('');
   };
 
   useEffect(() => {
@@ -78,104 +70,6 @@ export function ChatPanel({
   }, [messages, isSendingMessage]);
 
   const activeConv = conversations.find((c) => c.id === activeConversationId);
-
-  // Markdown & Citation Chip Formatter
-  const renderMessageBody = (text: string) => {
-    // Matches [filePath:startLine-endLine]
-    const citationRegex = /\[([a-zA-Z0-9_\-./]+):(\d+)-(\d+)\]/g;
-
-    // Split text by markdown code blocks ```...```
-    const parts = text.split(/(```[\s\S]*?```)/g);
-
-    return parts.map((part, index) => {
-      if (part.startsWith('```') && part.endsWith('```')) {
-        const lines = part.slice(3, -3).trim().split('\n');
-        let language = '';
-        let codeBody = part.slice(3, -3).trim();
-
-        if (lines.length > 0 && /^[a-zA-Z0-9_\-#+]+$/.test(lines[0].trim())) {
-          language = lines[0].trim();
-          codeBody = lines.slice(1).join('\n');
-        }
-
-        return (
-          <div key={index} className="my-2.5 rounded-xl overflow-hidden border border-slate-800 bg-slate-900 shadow-md">
-            <div className="flex items-center justify-between px-3 py-1.5 bg-slate-950/80 border-b border-slate-800 text-[10px] text-slate-400 font-mono">
-              <span className="font-semibold text-slate-300">{language || 'code'}</span>
-              <button
-                type="button"
-                onClick={() => handleCopy(codeBody)}
-                className="flex items-center gap-1 hover:text-slate-200 transition"
-              >
-                {copiedText === codeBody ? (
-                  <>
-                    <Check className="h-3 w-3 text-emerald-400" />
-                    <span className="text-emerald-400">Copied</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-3 w-3" />
-                    <span>Copy</span>
-                  </>
-                )}
-              </button>
-            </div>
-            <pre className="p-3 font-mono text-[11px] text-slate-100 overflow-x-auto whitespace-pre">
-              {codeBody}
-            </pre>
-          </div>
-        );
-      }
-
-      // Parse regular prose with embedded citation tokens
-      const textTokens: React.ReactNode[] = [];
-      let lastIndex = 0;
-      let match: RegExpExecArray | null;
-
-      // Reset regex index for fresh execution
-      citationRegex.lastIndex = 0;
-
-      while ((match = citationRegex.exec(part)) !== null) {
-        // Push text before match
-        if (match.index > lastIndex) {
-          textTokens.push(part.substring(lastIndex, match.index));
-        }
-
-        const fullCitationPath = match[1];
-        const startLine = parseInt(match[2], 10);
-        const endLine = parseInt(match[3], 10);
-
-        const isCurrentActive =
-          activeCitation?.filePath === fullCitationPath &&
-          activeCitation?.startLine === startLine &&
-          activeCitation?.endLine === endLine;
-
-        textTokens.push(
-          <CitationChip
-            key={`${fullCitationPath}-${startLine}-${endLine}-${match.index}`}
-            filePath={fullCitationPath}
-            startLine={startLine}
-            endLine={endLine}
-            isActive={isCurrentActive}
-            onClick={onCitationClick}
-          />
-        );
-
-        lastIndex = citationRegex.lastIndex;
-      }
-
-      // Push remaining text
-      if (lastIndex < part.length) {
-        textTokens.push(part.substring(lastIndex));
-      }
-
-      return (
-        <span key={index} className="whitespace-pre-wrap leading-relaxed text-xs sm:text-sm">
-          {textTokens}
-        </span>
-      );
-    });
-  };
 
   return (
     <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
@@ -303,9 +197,11 @@ export function ChatPanel({
                   {msg.role === 'USER' ? (
                     <p className="text-xs whitespace-pre-wrap">{msg.content}</p>
                   ) : (
-                    <div className="space-y-1">
-                      {renderMessageBody(msg.content)}
-                    </div>
+                    <GroundedMarkdown
+                      content={msg.content}
+                      activeCitation={activeCitation}
+                      onCitationClick={onCitationClick}
+                    />
                   )}
                 </div>
 
@@ -348,15 +244,15 @@ export function ChatPanel({
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
           <input
             type="text"
-            value={inputQuestion}
-            onChange={(e) => setInputQuestion(e.target.value)}
+            value={inputPrompt}
+            onChange={(e) => setInputPrompt(e.target.value)}
             placeholder="Ask a question about this repository's code..."
             disabled={isSendingMessage}
             className="flex-1 rounded-xl border border-slate-200 bg-slate-50/60 px-3.5 py-2 text-xs placeholder-slate-400 focus:border-indigo-600 focus:bg-white focus:outline-none focus:ring-1 focus:ring-indigo-600 disabled:opacity-50"
           />
           <button
             type="submit"
-            disabled={isSendingMessage || !inputQuestion.trim()}
+            disabled={isSendingMessage || !inputPrompt.trim()}
             className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm transition hover:bg-indigo-500 disabled:opacity-40 shrink-0"
           >
             {isSendingMessage ? (

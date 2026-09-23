@@ -72,6 +72,15 @@ public class RepositoryController {
         return ResponseEntity.ok(detail);
     }
 
+    @PostMapping("/{id}/reindex")
+    public ResponseEntity<RepositorySummaryDto> reindexRepository(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID id
+    ) {
+        RepositorySummaryDto result = repositoryService.reindexRepository(principal.getId(), id);
+        return ResponseEntity.accepted().body(result);
+    }
+
     @GetMapping("/{id}/files")
     public ResponseEntity<PageResponse<RepositoryFileDto>> getRepositoryFiles(
             @AuthenticationPrincipal UserPrincipal principal,

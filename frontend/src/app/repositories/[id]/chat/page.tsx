@@ -152,7 +152,7 @@ export default function RepositoryChatPage() {
     try {
       const assistantMsg = await apiFetch<Message>(`/api/conversations/${targetConvId}/messages`, {
         method: 'POST',
-        body: JSON.stringify({ content: prompt })
+        body: JSON.stringify({ question: prompt, content: prompt })
       });
 
       setMessages((prev) => [...prev, assistantMsg]);
@@ -183,7 +183,8 @@ export default function RepositoryChatPage() {
     setFileError(null);
 
     try {
-      const res = await fetch(`/api/repositories/${repoId}/files/content?path=${encodeURIComponent(filePath)}`, {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
+      const res = await fetch(`${apiBase}/api/repositories/${repoId}/files/content?path=${encodeURIComponent(filePath)}`, {
         credentials: 'include'
       });
 
@@ -237,8 +238,8 @@ export default function RepositoryChatPage() {
     );
   }
 
-  // If repository is not COMPLETED
-  if (repository.status !== 'COMPLETED') {
+  // If repository is actively indexing and has no chunks yet
+  if (repository.status !== 'COMPLETED' && (!repository.totalChunks || repository.totalChunks === 0)) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col">
         <header className="border-b border-slate-200 bg-white px-6 py-4 flex items-center justify-between">

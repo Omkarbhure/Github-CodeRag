@@ -89,9 +89,9 @@ public class GeminiEmbeddingService implements EmbeddingService {
                 768
         );
 
-        int maxRetries = 2;
+        int maxRetries = 6;
         int attempt = 0;
-        long backoffMs = 1000;
+        long backoffMs = 1500;
 
         while (true) {
             try {

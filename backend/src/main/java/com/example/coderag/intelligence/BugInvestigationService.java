@@ -84,10 +84,22 @@ public class BugInvestigationService {
 
         // 1. Parse error text for explicit stack trace signals
         Set<ParsedSignal> signals = parseStackTraceSignals(errorText);
-        List<String> identifiedFiles = signals.stream().map(ParsedSignal::fileName).distinct().collect(Collectors.toList());
+        List<String> identifiedFiles = new ArrayList<>(signals.stream().map(ParsedSignal::fileName).distinct().toList());
 
-        // 2. Direct lookup for identified file signals
-        List<SearchResultDto> directMatches = findDirectMatches(repo.getId(), signals);
+        if (request.getTargetFiles() != null && !request.getTargetFiles().isEmpty()) {
+            for (String targetFile : request.getTargetFiles()) {
+                if (targetFile != null && !targetFile.isBlank() && !identifiedFiles.contains(targetFile)) {
+                    identifiedFiles.add(targetFile);
+                }
+            }
+        }
+
+        // 2. Direct lookup for identified file signals + user-selected target files
+        List<SearchResultDto> directMatches = new ArrayList<>(findDirectMatches(repo.getId(), signals));
+        if (request.getTargetFiles() != null && !request.getTargetFiles().isEmpty()) {
+            List<SearchResultDto> targetMatches = findTargetFileMatches(repo.getId(), request.getTargetFiles());
+            directMatches.addAll(targetMatches);
+        }
 
         // 3. Hybrid search for surrounding context and error terms
         List<SearchResultDto> hybridMatches = hybridSearchService.search(repo.getId(), errorText, 8);
@@ -96,17 +108,23 @@ public class BugInvestigationService {
         List<SearchResultDto> combinedCandidates = mergeCandidates(directMatches, hybridMatches);
 
         // 5. Build context
-        String codeContext = contextBuilder.buildContext(combinedCandidates, 10, 10000);
+        String codeContext = contextBuilder.buildContext(combinedCandidates, 12, 12000);
 
-        // 6. Prompt LLM for grounded diagnosis
-        String prompt = String.format("""
-                You are an expert software engineer and debugging specialist.
-                A developer has reported the following error message / stack trace from their application:
-                
-                ```
-                %s
-                ```
-                
+        // 6. Build prompt with targeted files notice
+        StringBuilder promptBuilder = new StringBuilder();
+        promptBuilder.append("You are an expert software engineer and debugging specialist.\n");
+        promptBuilder.append("A developer has reported the following error / bug description:\n\n```\n");
+        promptBuilder.append(errorText).append("\n```\n\n");
+
+        if (request.getTargetFiles() != null && !request.getTargetFiles().isEmpty()) {
+            promptBuilder.append("USER SELECTED TARGET FILES FOR INSPECTION:\n");
+            for (String tf : request.getTargetFiles()) {
+                promptBuilder.append("- ").append(tf).append("\n");
+            }
+            promptBuilder.append("\nPlease prioritize inspecting these targeted files to determine if and how they trigger, propagate, or can resolve the reported bug.\n\n");
+        }
+
+        promptBuilder.append("""
                 Analyze the provided code snippets to investigate the root cause and provide clear guidance:
                 
                 ### 1. Root Cause Analysis
@@ -120,8 +138,9 @@ public class BugInvestigationService {
                 
                 ### 4. Diagnostic Confidence & Missing Information
                 If the error trace or code context does not contain sufficient details to localize the bug with high confidence, state what additional log lines or variables are needed rather than guessing.
-                """, errorText);
+                """);
 
+        String prompt = promptBuilder.toString();
         String analysis = answerGenerationService.generateAnswer(prompt, codeContext, Collections.emptyList());
 
         return BugInvestigationResponseDto.builder()
@@ -183,7 +202,7 @@ public class BugInvestigationService {
 
     private List<SearchResultDto> findDirectMatches(UUID repositoryId, Set<ParsedSignal> signals) {
         if (signals == null || signals.isEmpty()) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
 
         List<RepositoryFile> files = repositoryFileRepository.findByRepositoryId(repositoryId);
@@ -230,6 +249,53 @@ public class BugInvestigationService {
         }
 
         return directMatches;
+    }
+
+    private List<SearchResultDto> findTargetFileMatches(UUID repositoryId, List<String> targetFiles) {
+        if (targetFiles == null || targetFiles.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<RepositoryFile> files = repositoryFileRepository.findByRepositoryId(repositoryId);
+        List<CodeChunk> allChunks = codeChunkRepository.findByRepositoryId(repositoryId, Pageable.unpaged()).getContent();
+        Map<UUID, List<CodeChunk>> chunksByFileId = allChunks.stream().collect(Collectors.groupingBy(CodeChunk::getRepositoryFileId));
+
+        List<SearchResultDto> targetMatches = new ArrayList<>();
+        Set<UUID> matchedChunkIds = new HashSet<>();
+
+        for (String targetFile : targetFiles) {
+            String normTarget = targetFile.replace('\\', '/').trim();
+            for (RepositoryFile f : files) {
+                String normFile = f.getFilePath().replace('\\', '/');
+                if (normFile.equalsIgnoreCase(normTarget) || normFile.endsWith("/" + normTarget) || normTarget.endsWith("/" + normFile)) {
+                    List<CodeChunk> fileChunks = chunksByFileId.get(f.getId());
+                    if (fileChunks != null) {
+                        for (CodeChunk chunk : fileChunks) {
+                            if (matchedChunkIds.contains(chunk.getId())) continue;
+                            matchedChunkIds.add(chunk.getId());
+                            targetMatches.add(SearchResultDto.builder()
+                                    .id(chunk.getId())
+                                    .repositoryId(repositoryId)
+                                    .repositoryFileId(f.getId())
+                                    .filePath(chunk.getFilePath())
+                                    .language(f.getLanguage())
+                                    .startLine(chunk.getStartLine())
+                                    .endLine(chunk.getEndLine())
+                                    .chunkIndex(chunk.getChunkIndex())
+                                    .commitSha(chunk.getCommitSha())
+                                    .content(chunk.getContent())
+                                    .score(1.0)
+                                    .finalScore(1.0)
+                                    .keywordScore(1.0)
+                                    .vectorScore(1.0)
+                                    .build());
+                        }
+                    }
+                }
+            }
+        }
+
+        return targetMatches;
     }
 
     private List<SearchResultDto> mergeCandidates(List<SearchResultDto> directMatches, List<SearchResultDto> hybridMatches) {

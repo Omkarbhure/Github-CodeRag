@@ -65,7 +65,7 @@ app:
   gemini:
     api-key: ${GEMINI_API_KEY:}
     embedding-model: ${EMBEDDING_MODEL:gemini-embedding-001}
-    chat-model: ${CHAT_MODEL:gemini-2.5-flash}
+    chat-model: ${CHAT_MODEL:gemini-3.6-flash}
     base-url: ${GEMINI_API_BASE_URL:https://generativelanguage.googleapis.com}
     daily-quota: ${GEMINI_DAILY_QUOTA:1500}
     quota-enabled: ${GEMINI_QUOTA_ENABLED:true}

@@ -150,6 +150,38 @@ public class RepositoryService {
         return buildSummaryDto(repository, job, false);
     }
 
+    public RepositorySummaryDto reindexRepository(UUID userId, UUID repositoryId) {
+        GitHubRepository repository = repositoryRepository.findByIdAndOwnerId(repositoryId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Repository not found with id: " + repositoryId));
+
+        String commitSha = repository.getLatestCommitSha();
+        try {
+            commitSha = gitHubApiClient.getLatestCommitSha(repository.getOwner(), repository.getName(), repository.getDefaultBranch());
+            repository.setLatestCommitSha(commitSha);
+            repository = repositoryRepository.save(repository);
+        } catch (Exception e) {
+            log.warn("Could not fetch latest commit from GitHub for re-index, using existing commit {}", commitSha);
+        }
+
+        IndexingJob job = IndexingJob.builder()
+                .repositoryId(repository.getId())
+                .status(IndexingStatus.PENDING)
+                .startedAt(OffsetDateTime.now())
+                .build();
+        job = indexingJobRepository.save(job);
+
+        asyncIndexingService.processIndexingAsync(
+                repository.getId(),
+                job.getId(),
+                repository.getOwner(),
+                repository.getName(),
+                commitSha
+        );
+
+        log.info("Dispatched re-indexing job [{}] for repo: {}", job.getId(), repository.getFullName());
+        return buildSummaryDto(repository, job, false);
+    }
+
     @Transactional(readOnly = true)
     public List<RepositorySummaryDto> getUserRepositories(UUID userId) {
         List<GitHubRepository> repositories = repositoryRepository.findByOwnerIdOrderByCreatedAtDesc(userId);

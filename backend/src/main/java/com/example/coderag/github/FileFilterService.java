@@ -46,6 +46,16 @@ public class FileFilterService {
             ".avi", ".mov", ".7z", ".rar", ".iso", ".dll", ".so", ".dylib"
     );
 
+    private static final Set<String> IGNORED_FILE_NAMES = Set.of(
+            "package-lock.json",
+            "yarn.lock",
+            "pnpm-lock.yaml",
+            "composer.lock",
+            "cargo.lock",
+            "gemfile.lock",
+            "poetry.lock"
+    );
+
     private static final Map<String, String> EXTENSION_TO_LANGUAGE = new HashMap<>();
 
     static {
@@ -142,7 +152,8 @@ public class FileFilterService {
     public boolean isIgnoredPath(String relativePath) {
         String[] segments = relativePath.split("/");
         for (String segment : segments) {
-            if (IGNORED_DIRECTORIES.contains(segment.toLowerCase(Locale.ROOT))) {
+            String lower = segment.toLowerCase(Locale.ROOT);
+            if (IGNORED_DIRECTORIES.contains(lower) || IGNORED_FILE_NAMES.contains(lower)) {
                 return true;
             }
         }

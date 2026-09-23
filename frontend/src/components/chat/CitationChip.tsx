@@ -21,7 +21,7 @@ export function CitationChip({
   // Extract filename for concise display
   const fileName = filePath.split('/').pop() || filePath;
   const lineLabel = startLine === endLine ? `L${startLine}` : `L${startLine}-${endLine}`;
-  const displayLabel = `${fileName}:${startLine}-${endLine}`;
+  const displayLabel = startLine === endLine ? `${fileName}:${startLine}` : `${fileName}:${startLine}-${endLine}`;
 
   return (
     <button

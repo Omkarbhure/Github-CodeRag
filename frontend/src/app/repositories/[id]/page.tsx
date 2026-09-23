@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
@@ -14,7 +14,7 @@ import {
   ArchitectureOverview,
   BugInvestigationResponse
 } from '@/types/repository';
-import { CitationChip } from '@/components/chat/CitationChip';
+import { GroundedMarkdown } from '@/components/chat/GroundedMarkdown';
 import {
   ArrowLeft,
   GitBranch,
@@ -44,7 +44,9 @@ import {
   Boxes,
   Terminal,
   Check,
-  Share2
+  Share2,
+  SlidersHorizontal,
+  Database
 } from 'lucide-react';
 
 export default function RepositoryDetailPage() {
@@ -56,8 +58,8 @@ export default function RepositoryDetailPage() {
   const [repository, setRepository] = useState<RepositoryDetail | null>(null);
   const [loadingRepo, setLoadingRepo] = useState(true);
 
-  // Tab State: 'files' | 'chunks' | 'search' | 'architecture' | 'bug'
-  const [activeTab, setActiveTab] = useState<'files' | 'chunks' | 'search' | 'architecture' | 'bug'>('files');
+  // Tab State: 'architecture' | 'bug' | 'search' | 'chunks'
+  const [activeTab, setActiveTab] = useState<'architecture' | 'bug' | 'search' | 'chunks'>('architecture');
 
   // Files tab state
   const [filesData, setFilesData] = useState<PageResponse<RepositoryFile> | null>(null);
@@ -90,6 +92,51 @@ export default function RepositoryDetailPage() {
   const [bugResponse, setBugResponse] = useState<BugInvestigationResponse | null>(null);
   const [loadingBug, setLoadingBug] = useState(false);
   const [bugError, setBugError] = useState<string | null>(null);
+  const [selectedBugFile, setSelectedBugFile] = useState<string | null>(null);
+  const [loadingFileContent, setLoadingFileContent] = useState(false);
+  const [repoFilesList, setRepoFilesList] = useState<RepositoryFile[]>([]);
+  const [fileFilterInput, setFileFilterInput] = useState('');
+  const [fileSelectorOpen, setFileSelectorOpen] = useState(false);
+
+  const filteredRepoFiles = useMemo(() => {
+    if (!fileFilterInput.trim()) return repoFilesList;
+    const term = fileFilterInput.toLowerCase();
+    return repoFilesList.filter((f) => f.filePath.toLowerCase().includes(term));
+  }, [repoFilesList, fileFilterInput]);
+
+  const handleSelectBugFile = async (filePath: string) => {
+    if (selectedBugFile === filePath) {
+      setSelectedBugFile(null);
+      setBugInput('');
+      setFileSelectorOpen(false);
+      return;
+    }
+
+    setSelectedBugFile(filePath);
+    setFileSelectorOpen(false);
+    setFileFilterInput('');
+    setLoadingFileContent(true);
+
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
+      const res = await fetch(`${apiBase}/api/repositories/${repoId}/files/content?path=${encodeURIComponent(filePath)}`, {
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const text = await res.text();
+        setBugInput(text);
+      }
+    } catch (err) {
+      console.error('Failed to load file content:', err);
+    } finally {
+      setLoadingFileContent(false);
+    }
+  };
+
+  const handleClearSelectedFile = () => {
+    setSelectedBugFile(null);
+    setBugInput('');
+  };
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -105,6 +152,17 @@ export default function RepositoryDetailPage() {
       console.error('Failed to fetch repo detail:', err);
     } finally {
       setLoadingRepo(false);
+    }
+  }, [repoId]);
+
+  const fetchAllRepoFiles = useCallback(async () => {
+    try {
+      const data = await apiFetch<PageResponse<RepositoryFile>>(`/api/repositories/${repoId}/files?size=100&skipped=false`);
+      if (data && data.content) {
+        setRepoFilesList(data.content);
+      }
+    } catch (err) {
+      console.error('Failed to fetch repo files for selector:', err);
     }
   }, [repoId]);
 
@@ -189,7 +247,10 @@ export default function RepositoryDetailPage() {
     try {
       const res = await apiFetch<BugInvestigationResponse>(`/api/repositories/${repoId}/investigate-bug`, {
         method: 'POST',
-        body: JSON.stringify({ errorText: bugInput.trim() })
+        body: JSON.stringify({
+          errorText: bugInput.trim(),
+          targetFiles: selectedBugFile ? [selectedBugFile] : []
+        })
       });
       setBugResponse(res);
     } catch (err: any) {
@@ -203,8 +264,9 @@ export default function RepositoryDetailPage() {
   useEffect(() => {
     if (isAuthenticated && repoId) {
       fetchRepository();
+      fetchAllRepoFiles();
     }
-  }, [isAuthenticated, repoId, fetchRepository]);
+  }, [isAuthenticated, repoId, fetchRepository, fetchAllRepoFiles]);
 
   // Polling when repository is in non-terminal status
   useEffect(() => {
@@ -244,69 +306,7 @@ export default function RepositoryDetailPage() {
     }
   }, [isAuthenticated, repoId, activeTab, architectureData, fetchArchitecture]);
 
-  const renderWithCitations = (text: string) => {
-    const citationRegex = /\[([a-zA-Z0-9_\-./]+):(\d+)-(\d+)\]/g;
-    const parts = text.split(/(```[\s\S]*?```)/g);
 
-    return parts.map((part, index) => {
-      if (part.startsWith('```') && part.endsWith('```')) {
-        const lines = part.slice(3, -3).trim().split('\n');
-        let language = '';
-        let codeBody = part.slice(3, -3).trim();
-        if (lines.length > 0 && /^[a-zA-Z0-9_\-#+]+$/.test(lines[0].trim())) {
-          language = lines[0].trim();
-          codeBody = lines.slice(1).join('\n');
-        }
-        return (
-          <div key={index} className="my-3 rounded-xl overflow-hidden border border-slate-800 bg-slate-900 shadow-sm">
-            {language && (
-              <div className="px-3 py-1 bg-slate-950/80 border-b border-slate-800 text-[10px] font-mono text-slate-400">
-                {language}
-              </div>
-            )}
-            <pre className="p-3 font-mono text-xs text-slate-100 overflow-x-auto whitespace-pre">{codeBody}</pre>
-          </div>
-        );
-      }
-
-      const tokens: React.ReactNode[] = [];
-      let lastIndex = 0;
-      let match: RegExpExecArray | null;
-      citationRegex.lastIndex = 0;
-
-      while ((match = citationRegex.exec(part)) !== null) {
-        if (match.index > lastIndex) {
-          tokens.push(part.substring(lastIndex, match.index));
-        }
-        const filePath = match[1];
-        const startLine = parseInt(match[2], 10);
-        const endLine = parseInt(match[3], 10);
-
-        tokens.push(
-          <CitationChip
-            key={`${filePath}-${startLine}-${endLine}-${match.index}`}
-            filePath={filePath}
-            startLine={startLine}
-            endLine={endLine}
-            onClick={(fp, start, end) => {
-              router.push(`/repositories/${repoId}/chat?file=${encodeURIComponent(fp)}&startLine=${start}&endLine=${end}`);
-            }}
-          />
-        );
-        lastIndex = match.index + match[0].length;
-      }
-
-      if (lastIndex < part.length) {
-        tokens.push(part.substring(lastIndex));
-      }
-
-      return (
-        <span key={index} className="whitespace-pre-wrap leading-relaxed">
-          {tokens}
-        </span>
-      );
-    });
-  };
 
   if (authLoading || loadingRepo || !repository) {
     return (
@@ -450,39 +450,6 @@ export default function RepositoryDetailPage() {
         {/* Tab Selector */}
         <div className="flex items-center gap-2 border-b border-slate-200 overflow-x-auto">
           <button
-            onClick={() => setActiveTab('files')}
-            className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold transition whitespace-nowrap ${
-              activeTab === 'files'
-                ? 'border-indigo-600 text-indigo-600'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            <FileCode2 className="h-4 w-4" />
-            <span>Files ({repository.totalFiles})</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('chunks')}
-            className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold transition whitespace-nowrap ${
-              activeTab === 'chunks'
-                ? 'border-indigo-600 text-indigo-600'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            <Layers className="h-4 w-4" />
-            <span>Code Chunks ({repository.totalChunks ?? 0})</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('search')}
-            className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold transition whitespace-nowrap ${
-              activeTab === 'search'
-                ? 'border-indigo-600 text-indigo-600'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            <Sparkles className="h-4 w-4 text-indigo-500" />
-            <span>Hybrid Search</span>
-          </button>
-          <button
             onClick={() => setActiveTab('architecture')}
             className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold transition whitespace-nowrap ${
               activeTab === 'architecture'
@@ -504,157 +471,95 @@ export default function RepositoryDetailPage() {
             <Bug className="h-4 w-4 text-rose-500" />
             <span>Bug Investigation</span>
           </button>
+          <button
+            onClick={() => setActiveTab('search')}
+            className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold transition whitespace-nowrap ${
+              activeTab === 'search'
+                ? 'border-indigo-600 text-indigo-600'
+                : 'border-transparent text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <Sparkles className="h-4 w-4 text-indigo-500" />
+            <span>Hybrid Search</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('chunks')}
+            className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold transition whitespace-nowrap ${
+              activeTab === 'chunks'
+                ? 'border-indigo-600 text-indigo-600'
+                : 'border-transparent text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <SlidersHorizontal className="h-4 w-4 text-slate-500" />
+            <span>Advanced / Indexing Stats ({repository.totalChunks ?? 0})</span>
+          </button>
         </div>
 
-        {/* Files View */}
-        {activeTab === 'files' && (
-          <section className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <div className="flex flex-col sm:flex-row items-center justify-between border-b border-slate-200 p-4 gap-4 bg-slate-50/50">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => { setFilterSkipped('all'); setFilePage(0); }}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                    filterSkipped === 'all'
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
-                  }`}
-                >
-                  All ({repository.totalFiles})
-                </button>
-                <button
-                  onClick={() => { setFilterSkipped('kept'); setFilePage(0); }}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                    filterSkipped === 'kept'
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
-                  }`}
-                >
-                  Kept ({repository.keptFiles})
-                </button>
-                <button
-                  onClick={() => { setFilterSkipped('skipped'); setFilePage(0); }}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                    filterSkipped === 'skipped'
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
-                  }`}
-                >
-                  Skipped ({repository.skippedFiles})
-                </button>
+        {/* Advanced / Indexing Stats View */}
+        {activeTab === 'chunks' && (
+          <div className="space-y-6">
+            {/* Indexing Diagnostics Cards */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="flex items-center gap-2 text-slate-500 mb-1">
+                  <Layers className="h-4 w-4 text-indigo-600" />
+                  <span className="text-xs font-semibold">Total Code Chunks</span>
+                </div>
+                <div className="text-xl font-bold text-slate-900">
+                  {chunksData?.totalElements ?? repository.totalChunks ?? 0}
+                </div>
+                <div className="text-[10px] text-slate-500 mt-1">Indexed in Vector & Keyword Stores</div>
               </div>
 
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Filter on-screen files..."
-                  value={fileSearchQuery}
-                  onChange={(e) => setFileSearchQuery(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 py-1.5 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                />
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="flex items-center gap-2 text-slate-500 mb-1">
+                  <Code2 className="h-4 w-4 text-purple-600" />
+                  <span className="text-xs font-semibold">Chunk Window</span>
+                </div>
+                <div className="text-xl font-bold text-slate-900">120 Lines</div>
+                <div className="text-[10px] text-slate-500 mt-1">20-line sliding window overlap</div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="flex items-center gap-2 text-slate-500 mb-1">
+                  <Cpu className="h-4 w-4 text-emerald-600" />
+                  <span className="text-xs font-semibold">Vector Embedding</span>
+                </div>
+                <div className="text-xl font-bold text-slate-900">768-dim</div>
+                <div className="text-[10px] text-slate-500 mt-1">Gemini text-embedding-004</div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="flex items-center gap-2 text-slate-500 mb-1">
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                  <span className="text-xs font-semibold">Low-Value Filtered</span>
+                </div>
+                <div className="text-xl font-bold text-slate-900">
+                  {repository.lowValueSkippedCount ?? 0}
+                </div>
+                <div className="text-[10px] text-slate-500 mt-1">Minified & generated files skipped</div>
               </div>
             </div>
 
-            {loadingFiles ? (
-              <div className="flex py-16 items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
-              </div>
-            ) : !filesData || filesData.content.length === 0 ? (
-              <div className="p-8 text-center text-xs text-slate-500">No files found matching criteria.</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 font-semibold">
-                    <tr>
-                      <th className="px-4 py-3">File Path</th>
-                      <th className="px-4 py-3">Language</th>
-                      <th className="px-4 py-3">Size</th>
-                      <th className="px-4 py-3">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {filesData.content
-                      .filter((f) => !fileSearchQuery || f.filePath.toLowerCase().includes(fileSearchQuery.toLowerCase()))
-                      .map((file) => (
-                        <tr key={file.id} className="hover:bg-slate-50/80 transition">
-                          <td className="px-4 py-3 font-mono font-medium text-slate-900 flex items-center gap-2">
-                            <FileCode2 className="h-4 w-4 text-indigo-500 shrink-0" />
-                            <span className="truncate max-w-md">{file.filePath}</span>
-                          </td>
-                          <td className="px-4 py-3 text-slate-600 uppercase font-mono text-[11px]">
-                            {file.language || '-'}
-                          </td>
-                          <td className="px-4 py-3 text-slate-500">
-                            {(file.sizeBytes / 1024).toFixed(1)} KB
-                          </td>
-                          <td className="px-4 py-3">
-                            {file.skipped ? (
-                              <div className="space-y-0.5">
-                                <span className="inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 border border-amber-200">
-                                  SKIPPED
-                                </span>
-                                {file.skipReason && (
-                                  <p className="text-[10px] text-slate-400 font-mono line-clamp-1">{file.skipReason}</p>
-                                )}
-                              </div>
-                            ) : (
-                              <span className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
-                                KEPT
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-
-                {/* Pagination */}
-                <div className="flex items-center justify-between border-t border-slate-200 px-4 py-3 bg-slate-50/50">
-                  <span className="text-xs text-slate-500">
-                    Page {filesData.page + 1} of {filesData.totalPages || 1} ({filesData.totalElements} items)
+            {/* Chunks Explorer Section */}
+            <section className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <div className="border-b border-slate-200 p-4 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-slate-900">
+                    Chunk Inspector & Raw Segments ({chunksData?.totalElements ?? repository.totalChunks ?? 0})
                   </span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setFilePage((p) => Math.max(0, p - 1))}
-                      disabled={filesData.first}
-                      className="rounded-lg border border-slate-200 bg-white p-1 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => setFilePage((p) => p + 1)}
-                      disabled={filesData.last}
-                      className="rounded-lg border border-slate-200 bg-white p-1 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </div>
+                </div>
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Filter chunk paths..."
+                    value={chunkSearchQuery}
+                    onChange={(e) => setChunkSearchQuery(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 py-1.5 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
                 </div>
               </div>
-            )}
-          </section>
-        )}
-
-        {/* Chunks View */}
-        {activeTab === 'chunks' && (
-          <section className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <div className="border-b border-slate-200 p-4 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-slate-900">
-                  Total Chunks: {chunksData?.totalElements ?? repository.totalChunks ?? 0}
-                </span>
-              </div>
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Filter chunk paths..."
-                  value={chunkSearchQuery}
-                  onChange={(e) => setChunkSearchQuery(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 py-1.5 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                />
-              </div>
-            </div>
 
             {loadingChunks ? (
               <div className="flex py-16 items-center justify-center">
@@ -726,7 +631,8 @@ export default function RepositoryDetailPage() {
               </div>
             )}
           </section>
-        )}
+        </div>
+      )}
 
         {/* Semantic Search View */}
         {activeTab === 'search' && (
@@ -738,7 +644,7 @@ export default function RepositoryDetailPage() {
                   <span>Hybrid Semantic & Keyword Code Search</span>
                 </h2>
                 <p className="text-xs text-slate-500">
-                  Combines Qdrant 768-dim vector embeddings with PostgreSQL full-text search and weighted score fusion.
+                  Search across functions, classes, and logic using natural language or exact keywords.
                 </p>
               </div>
 
@@ -943,8 +849,13 @@ export default function RepositoryDetailPage() {
                   )}
 
                   {/* Overview Text */}
-                  <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-5 text-xs text-slate-800 space-y-4">
-                    {renderWithCitations(architectureData.overviewText)}
+                  <div className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
+                    <GroundedMarkdown
+                      content={architectureData.overviewText}
+                      onCitationClick={(fp, start, end) => {
+                        router.push(`/repositories/${repoId}/chat?file=${encodeURIComponent(fp)}&startLine=${start}&endLine=${end}`);
+                      }}
+                    />
                   </div>
                 </div>
               ) : null}
@@ -966,11 +877,151 @@ export default function RepositoryDetailPage() {
                 </p>
               </div>
 
-              <form onSubmit={handleInvestigateBug} className="space-y-3">
-                <div className="space-y-2">
+              <form onSubmit={handleInvestigateBug} className="space-y-4">
+                {/* Single Repository File Selector */}
+                <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/60 p-3.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                      <FileCode2 className="h-3.5 w-3.5 text-rose-500" />
+                      <span>Select Target File to Inspect (1 File at a time)</span>
+                      <span className="text-[10px] font-normal text-slate-500 hidden sm:inline">
+                        &mdash; Loads file source code directly into the editor
+                      </span>
+                    </label>
+                    {selectedBugFile && (
+                      <button
+                        type="button"
+                        onClick={handleClearSelectedFile}
+                        className="text-[11px] font-medium text-rose-600 hover:text-rose-800 transition"
+                      >
+                        Clear selected file
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Selected File Active Badge */}
+                  {selectedBugFile && (
+                    <div className="flex items-center justify-between rounded-lg bg-rose-50 border border-rose-200 px-3 py-1.5 text-xs">
+                      <div className="flex items-center gap-2 truncate">
+                        <FileCode2 className="h-3.5 w-3.5 text-rose-600 shrink-0" />
+                        <span className="font-mono font-bold text-rose-900 truncate text-[11px]">
+                          {selectedBugFile}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleClearSelectedFile}
+                        className="text-xs font-semibold text-rose-600 hover:text-rose-800 flex items-center gap-1 shrink-0 ml-2"
+                      >
+                        <span>Remove</span>
+                        <span className="font-bold text-sm leading-none">&times;</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Searchable file picker input & popover list */}
+                  <div className="relative">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="Search & choose a file from this repository to load code..."
+                        value={fileFilterInput}
+                        onChange={(e) => {
+                          setFileFilterInput(e.target.value);
+                          setFileSelectorOpen(true);
+                        }}
+                        onFocus={() => setFileSelectorOpen(true)}
+                        className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-8 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 shadow-sm"
+                      />
+                      {fileFilterInput && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFileFilterInput('');
+                            setFileSelectorOpen(false);
+                          }}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                        >
+                          &times;
+                        </button>
+                      )}
+                    </div>
+
+                    {fileSelectorOpen && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-20"
+                          onClick={() => setFileSelectorOpen(false)}
+                        />
+                        <div className="absolute z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl divide-y divide-slate-100">
+                          {filteredRepoFiles.length === 0 ? (
+                            <div className="p-3 text-center text-xs text-slate-400">
+                              No matching repository files found.
+                            </div>
+                          ) : (
+                            filteredRepoFiles.map((file) => {
+                              const isSelected = selectedBugFile === file.filePath;
+                              return (
+                                <button
+                                  key={file.id || file.filePath}
+                                  type="button"
+                                  onClick={() => handleSelectBugFile(file.filePath)}
+                                  className={`flex w-full items-center justify-between px-3 py-2 text-left text-xs transition rounded-lg ${
+                                    isSelected
+                                      ? 'bg-rose-50/90 text-rose-800 font-semibold'
+                                      : 'text-slate-700 hover:bg-slate-50'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2 truncate pr-2">
+                                    <FileCode2
+                                      className={`h-3.5 w-3.5 shrink-0 ${
+                                        isSelected ? 'text-rose-600' : 'text-slate-400'
+                                      }`}
+                                    />
+                                    <span className="font-mono truncate text-[11px]">{file.filePath}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    {file.language && (
+                                      <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono text-slate-500">
+                                        {file.language}
+                                      </span>
+                                    )}
+                                    <span
+                                      className={`text-[11px] font-bold ${
+                                        isSelected ? 'text-rose-600' : 'text-slate-400'
+                                      }`}
+                                    >
+                                      {isSelected ? '✓ Selected' : 'Select'}
+                                    </span>
+                                  </div>
+                                </button>
+                              );
+                            })
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2 relative">
+                  {loadingFileContent && (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/80 backdrop-blur-xs">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-rose-600">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Loading file source code...</span>
+                      </div>
+                    </div>
+                  )}
+
                   <textarea
-                    rows={6}
-                    placeholder={`Paste stack trace or error description, e.g.:\n\njava.lang.NullPointerException: Cannot invoke method\n    at com.example.coderag.service.AuthService.validateToken(AuthService.java:42)\n    at com.example.coderag.controller.AuthController.login(AuthController.java:25)`}
+                    rows={8}
+                    placeholder={
+                      selectedBugFile
+                        ? `Loaded source code for ${selectedBugFile}. You can add error notes, stack trace, or click Analyze.`
+                        : `Paste stack trace or error description, or select a file above to load its code...\n\njava.lang.NullPointerException: Cannot invoke method\n    at com.example.coderag.service.AuthService.validateToken(AuthService.java:42)\n    at com.example.coderag.controller.AuthController.login(AuthController.java:25)`
+                    }
                     value={bugInput}
                     onChange={(e) => setBugInput(e.target.value)}
                     className="w-full rounded-xl border border-slate-200 bg-white p-3.5 font-mono text-xs focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 shadow-sm"
@@ -1045,8 +1096,13 @@ export default function RepositoryDetailPage() {
                     )}
                   </div>
 
-                  <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-5 text-xs text-slate-800 space-y-3">
-                    {renderWithCitations(bugResponse.analysis)}
+                  <div className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
+                    <GroundedMarkdown
+                      content={bugResponse.analysis}
+                      onCitationClick={(fp, start, end) => {
+                        router.push(`/repositories/${repoId}/chat?file=${encodeURIComponent(fp)}&startLine=${start}&endLine=${end}`);
+                      }}
+                    />
                   </div>
                 </div>
 
