@@ -6,7 +6,8 @@ export function middleware(request: NextRequest) {
 
   // If there's no JWT cookie present on protected routes, redirect to /login immediately
   if (!token) {
-    const loginUrl = new URL('/login', request.url);
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = '/login';
     return NextResponse.redirect(loginUrl);
   }
 
