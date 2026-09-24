@@ -22,6 +22,9 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+    baseline-version: 0
+    schemas: public
+    default-schema: public
 
   security:
     oauth2:
