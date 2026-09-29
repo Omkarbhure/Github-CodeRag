@@ -1,16 +1,13 @@
-
-
-
 # 🚀 RepoPilot (GitHub CodeRAG)
 
-[![CI/CD Pipeline](https://github.com/Omkarbhure/Github-CodeRag/actions/workflows/ci.yml/badge.svg)]
+[![CI/CD Pipeline](https://github.com/Omkarbhure/Github-CodeRag/actions/workflows/ci.yml/badge.svg)](https://github.com/Omkarbhure/Github-CodeRag/actions/workflows/ci.yml)
 [![Java 17](https://img.shields.io/badge/Java-17%2B-ED8B00?style=flat&logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/17/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.4-6DB33F?style=flat&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Next.js 14](https://img.shields.io/badge/Next.js-14.2%20(App%20Router)-black?style=flat&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-316192?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Qdrant Vector DB](https://img.shields.io/badge/Qdrant-Vector%20Search-DC2626?style=flat&logo=qdrant&logoColor=white)](https://qdrant.tech/)
 [![Google Gemini API](https://img.shields.io/badge/Google%20Gemini-Flash%20%26%20Embeddings-4285F4?style=flat&logo=google&logoColor=white)](https://ai.google.dev/)
-
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 > **RepoPilot (GitHub CodeRAG)** is an enterprise-grade Retrieval-Augmented Generation (RAG) platform and developer intelligence workspace. It ingests public GitHub repositories, performs AST-aware chunking and hybrid vector/keyword indexing, and powers an interactive split-view Monaco workspace for grounded code questioning, bug investigation, and architectural synthesis with strict line-level citations.
 
@@ -287,7 +284,7 @@ Frontend will be accessible at [http://localhost:3000](http://localhost:3000).
 
 The project includes unit and integration tests across both the backend and frontend.
 
-### Run Backend Tests (76 Unit & Integration Tests)
+### Run Backend Tests (77 Unit & Integration Tests)
 ```bash
 cd backend
 mvn test
@@ -302,15 +299,14 @@ npm run build
 ```
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-<img width="1410" height="910" alt="Screenshot 2026-09-29 170843" src="https://github.com/user-attachments/assets/7edac378-ba62-4022-988d-c24234cad74d" />
-<img width="740" height="716" alt="Screenshot 2026-09-29 171007" src="https://github.com/user-attachments/assets/09f949f2-1fee-4802-93a5-b7013444de0e" />
-<img width="1245" height="570" alt="Screenshot 2026-09-29 171117" src="https://github.com/user-attachments/assets/2d2fe516-ac1d-49cc-8bc2-94bd6e8f32f4" />
-<img width="1907" height="897" alt="coderg" src="https://github.com/user-attachments/assets/df1efe5e-88cc-446a-89fb-137d5bad19bf" />
-<img width="1435" height="907" alt="Screenshot 2026-09-29 172553" src="https://github.com/user-attachments/assets/78dcb72a-408d-431c-b075-eb71e09d8204" />
 
 
 
-
+<img width="1410" height="910" alt="Screenshot 2026-09-29 170843" src="https://github.com/user-attachments/assets/6530e63b-1251-4a53-8aa8-5ded8de33644" />
+<img width="740" height="716" alt="Screenshot 2026-09-29 171007" src="https://github.com/user-attachments/assets/5b881178-69d7-4852-a23b-5856eae3a073" />
+<img width="1245" height="570" alt="Screenshot 2026-09-29 171117" src="https://github.com/user-attachments/assets/e550627e-15d5-4f82-be1a-97277f7574f1" />
+<img width="1907" height="897" alt="coderg" src="https://github.com/user-attachments/assets/e34da922-ae78-44ef-abec-dca257abc455" />
+<img width="1435" height="907" alt="Screenshot 2026-09-29 172553" src="https://github.com/user-attachments/assets/4974a914-0056-4db5-a970-42b433489245" />
 
 
 
