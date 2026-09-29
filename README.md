@@ -10,7 +10,7 @@
 [![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-316192?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Qdrant Vector DB](https://img.shields.io/badge/Qdrant-Vector%20Search-DC2626?style=flat&logo=qdrant&logoColor=white)](https://qdrant.tech/)
 [![Google Gemini API](https://img.shields.io/badge/Google%20Gemini-Flash%20%26%20Embeddings-4285F4?style=flat&logo=google&logoColor=white)](https://ai.google.dev/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 
 > **RepoPilot (GitHub CodeRAG)** is an enterprise-grade Retrieval-Augmented Generation (RAG) platform and developer intelligence workspace. It ingests public GitHub repositories, performs AST-aware chunking and hybrid vector/keyword indexing, and powers an interactive split-view Monaco workspace for grounded code questioning, bug investigation, and architectural synthesis with strict line-level citations.
 
