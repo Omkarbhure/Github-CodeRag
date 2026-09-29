@@ -1,6 +1,6 @@
 # 🚀 RepoPilot (GitHub CodeRAG)
 
-[![CI/CD Pipeline](https://github.com/Omkarbhure/Github-CodeRag/actions/workflows/ci.yml/badge.svg)](https://github.com/Omkarbhure/Github-CodeRag/actions/workflows/ci.yml)
+[![CI/CD Pipeline](https://github.com/Omkarbhure/Github-CodeRag/actions/workflows/ci.yml/badge.svg)](https://github.com/Omkarbhure/Github-CodeRag/actions/workflows/ci.ym)
 [![Java 17](https://img.shields.io/badge/Java-17%2B-ED8B00?style=flat&logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/17/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.4-6DB33F?style=flat&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Next.js 14](https://img.shields.io/badge/Next.js-14.2%20(App%20Router)-black?style=flat&logo=next.js&logoColor=white)](https://nextjs.org/)
